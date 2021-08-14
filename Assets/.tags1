@@ -1,0 +1,11 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Leg	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^public class Leg : Limb$/;"	class	line:6
+FixedUpdate	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  private void FixedUpdate()$/;"	method	line:10	class:Leg	file:	signature:()
+AngleToes	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  void AngleToes(Vector3 normal)$/;"	method	line:53	class:Leg	file:	signature:(Vector3 normal)
+CheckNeedStep	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  bool CheckNeedStep()$/;"	method	line:59	class:Leg	file:	signature:()
+FindGround	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  public virtual LimbPosition FindGround()$/;"	method	line:85	class:Leg	signature:()
