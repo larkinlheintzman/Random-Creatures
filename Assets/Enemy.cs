@@ -17,7 +17,7 @@ public class Enemy : MonoBehaviour
 
   void Start()
   {
-    target = GameManager.me.player;
+    target = new GameObject().transform; // needs to be more general
     agent = GetComponent<NavMeshAgent>();
   }
 

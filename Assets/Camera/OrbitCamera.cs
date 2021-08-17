@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Camera))]
 public class OrbitCamera : MonoBehaviour {
 
+	public bool initialized = false;
 	[SerializeField]
 	public RenderTexture pixelTexture;
 
@@ -80,15 +81,16 @@ public class OrbitCamera : MonoBehaviour {
 		}
 	}
 
-	InputManager inputManager;
+	public PlayerManager playerManager;
 
-	void OnValidate () {
+	void OnValidate ()
+	{
 		if (maxVerticalAngle < minVerticalAngle) {
 			maxVerticalAngle = minVerticalAngle;
 		}
 	}
 
-	void Awake () {
+	public void Initialize() {
 		regularCamera = GetComponent<Camera>();
 		focusPoint = focus.position;
 		transform.localRotation = Quaternion.Euler(orbitAngles);
@@ -98,14 +100,18 @@ public class OrbitCamera : MonoBehaviour {
 		aimTarget = new GameObject().transform;
 		aimTarget.gameObject.name = "AimTarget";
 
-		inputManager = GameObject.Find("GameManager").GetComponent<InputManager>();
+		playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+
+		initialized = true;
+
+
 		// pixelTexture.height = 200;
 		// pixelTexture.width = 200;
 	}
 
 
 	void LateUpdate () {
-		if (rotationEnabled)
+		if (rotationEnabled && initialized)
 		{
 			UpdateAimTargetPoint();
 			UpdateFocusPoint();
@@ -146,21 +152,21 @@ public class OrbitCamera : MonoBehaviour {
 	{
 
     // do inventory if's
-    if (inputManager.inventoryOpen && !inputManager.aiming)
+    if (playerManager.inputManager.inventoryOpen && !playerManager.inputManager.aiming)
     {
       distance = inventoryDistance;
 			aimingRecticle.enabled = false;
 			focusOffset = Vector3.zero;
     }
 
-		if (!inputManager.inventoryOpen && inputManager.aiming)
+		if (!playerManager.inputManager.inventoryOpen && playerManager.inputManager.aiming)
     {
       distance = aimingDistance;
 			aimingRecticle.enabled = true;
 			focusOffset = aimingOffset.x*transform.right + aimingOffset.y*transform.up;
     }
 
-		if (!inputManager.inventoryOpen && !inputManager.aiming)
+		if (!playerManager.inputManager.inventoryOpen && !playerManager.inputManager.aiming)
     {
       distance = defaultDistance;
 			aimingRecticle.enabled = false;
@@ -169,7 +175,7 @@ public class OrbitCamera : MonoBehaviour {
 
   }
 
-	void UpdateAimTargetPoint () {
+	public void UpdateAimTargetPoint () {
 		RaycastHit hitInfo = new RaycastHit();
 		float maxRange = 500f;
 		if(Physics.Raycast (transform.position, transform.forward, out hitInfo, maxRange, aimLayerMask))
@@ -182,7 +188,7 @@ public class OrbitCamera : MonoBehaviour {
 		}
 	}
 
-	void UpdateFocusPoint () {
+	public void UpdateFocusPoint () {
 		previousFocusPoint = focusPoint;
 		Vector3 targetPoint = focus.position + focusOffset;
 		if (focusRadius > 0f) {
@@ -201,7 +207,7 @@ public class OrbitCamera : MonoBehaviour {
 		}
 	}
 
-	bool ManualRotation () {
+	public bool ManualRotation () {
 		Vector2 input = new Vector2(
       -mouse.delta.y.ReadValue(),
       mouse.delta.x.ReadValue()
@@ -215,7 +221,7 @@ public class OrbitCamera : MonoBehaviour {
 		return false;
 	}
 
-	bool AutomaticRotation () {
+	public bool AutomaticRotation () {
 		if (Time.unscaledTime - lastManualRotationTime < alignDelay) {
 			return false;
 		}
@@ -244,7 +250,7 @@ public class OrbitCamera : MonoBehaviour {
 		return true;
 	}
 
-	void ConstrainAngles () {
+	public void ConstrainAngles () {
 		orbitAngles.x =
 			Mathf.Clamp(orbitAngles.x, minVerticalAngle, maxVerticalAngle);
 

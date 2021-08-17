@@ -12,6 +12,7 @@ public class MassController : MonoBehaviour
   CharacterInputs input;
   public Transform playerInputSpace;
   public CreatureGenerator generator;
+  public PlayerManager playerManager;
 
   public Vector3 currentPosition;
   public Vector3 currentVelocity;
@@ -60,6 +61,7 @@ public class MassController : MonoBehaviour
   public float groundedMaxDistance = 1.05f; // set more better
   [HideInInspector, Range(0,1)]
   public float rotationSpeed = 0.2f;
+
   [HideInInspector]
   private int layerMask;
 
@@ -84,6 +86,7 @@ public class MassController : MonoBehaviour
     playerInputSpace = inputSpace;
     isJumping = false;
     initalized = true;
+    playerManager = gen.playerManager;
   }
 
   void ApplyCurrentInput()
@@ -91,17 +94,17 @@ public class MassController : MonoBehaviour
     // applies forces from player input
     if (generator.isGrounded)
     {
-      if (GameManager.me.inputManager.runPressed)
+      if (playerManager.inputManager.runPressed)
       {
-        rb.AddForce(playerSpeedMult * playerRunMult * generator.MapToInputSpace(GameManager.me.inputManager.movementInput));
+        rb.AddForce(playerSpeedMult * playerRunMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
       }
       else
       {
-        rb.AddForce(playerSpeedMult * generator.MapToInputSpace(GameManager.me.inputManager.movementInput));
+        rb.AddForce(playerSpeedMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
       }
     }
     else {
-      rb.AddForce(playerSpeedMult * playerAirSpeedMult * generator.MapToInputSpace(GameManager.me.inputManager.movementInput));
+      rb.AddForce(playerSpeedMult * playerAirSpeedMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
     }
   }
 
@@ -117,14 +120,14 @@ public class MassController : MonoBehaviour
   void UpdateTorques()
   {
 
-    if(generator.isPlayer && !GameManager.me.inputManager.isSliding)
+    if(generator.isPlayer && !playerManager.inputManager.isSliding)
     {
 
       if (!rotationMode)
       {
-        if (GameManager.me.inputManager.movementInput.sqrMagnitude != 0)
+        if (playerManager.inputManager.movementInput.sqrMagnitude != 0)
         {
-          lastMappedMoveLook = generator.MapToInputSpace(GameManager.me.inputManager.movementInput);
+          lastMappedMoveLook = generator.MapToInputSpace(playerManager.inputManager.movementInput);
           Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, Vector3.up);
           Quaternion lerpedLookRotation = Quaternion.Lerp(transform.rotation, moveLookRotation, rotationSpeed);
           desiredLookRotation = moveLookRotation;
@@ -147,7 +150,7 @@ public class MassController : MonoBehaviour
       }
 
     }
-    else if (generator.isPlayer && GameManager.me.inputManager.isSliding)
+    else if (generator.isPlayer && playerManager.inputManager.isSliding)
     {
       // again normals here
       Quaternion velocityLookRotation = Quaternion.LookRotation(rb.velocity, Vector3.up);
@@ -252,7 +255,7 @@ public class MassController : MonoBehaviour
     }
 
     // update sliding mechanic
-    if(GameManager.me.inputManager.isSliding)
+    if(playerManager.inputManager.isSliding)
     {
       rb.drag = 0.0f;
     }
@@ -275,7 +278,7 @@ public class MassController : MonoBehaviour
     {
       ApplyCurrentInput();
       HandleJumpMotion();
-      if (GameManager.me.inputManager.aiming)
+      if (playerManager.inputManager.aiming)
       {
         rotationMode = true;
       }
@@ -297,7 +300,7 @@ public class MassController : MonoBehaviour
     {
 
       jumpVelocity = new Vector3(0.0f, (((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed), 0.0f);
-      if (GameManager.me.inputManager.jumpPressed) // still holding button
+      if (playerManager.inputManager.jumpPressed) // still holding button
       {
         jumpDelayCounter -= 1; // count down to lift off
       }
@@ -326,7 +329,7 @@ public class MassController : MonoBehaviour
       }
     }
 
-    if (GameManager.me.inputManager.jumpPressed && generator.isGrounded && !isJumping)
+    if (playerManager.inputManager.jumpPressed && generator.isGrounded && !isJumping)
     {
       // Handle jump motion
       isJumping = true;

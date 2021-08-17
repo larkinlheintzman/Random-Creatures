@@ -32,7 +32,7 @@ public class SwordArm : Limb
     if (initialized)
     {
 
-      if (GameManager.me.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
+      if (playerManager.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
       {
         if (true)
         {
@@ -99,7 +99,7 @@ public class SwordArm : Limb
         {
           inMotion = false;
           swingParticles.Stop();
-          GameManager.me.particleContainer.PlayParticle(2, edgeCollider.hitPoint);
+          playerManager.particleContainer.PlayParticle(2, edgeCollider.hitPoint);
           motionEndTime = Time.time;
           Twitch(-bone.forward, twitchScale, twitchRandomScale);
 

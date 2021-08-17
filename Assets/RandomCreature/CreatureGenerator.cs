@@ -16,6 +16,7 @@ public class CreatureGenerator : MonoBehaviour
   public Transform cameraTransform;
   public bool isPlayer = false; // makes camera follow and inputs work
   public bool isGrounded = true; // depends on limbs and such...
+  public bool built = false; // whether body is built yet
   public float limbSupport = 0.0f;
 
   [HideInInspector]
@@ -43,9 +44,7 @@ public class CreatureGenerator : MonoBehaviour
   public MassController ctrl; // actual motion controller
   public Health health;
 
-  // thing to display text on
-  // [HideInInspector]
-  // public GameObject canvasContainer;
+  public PlayerManager playerManager;
 
   private GameObject idleLimbObj;
   private Vector3[] textOffsets;
@@ -65,12 +64,8 @@ public class CreatureGenerator : MonoBehaviour
       orbitCam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
     }
 
-  }
+    playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
 
-  // Start is called before the first frame update
-  void Start()
-  {
-    RandomizeCreature();
   }
 
   public Vector3 worldToPlayerSpace(Vector3 worldPos)
@@ -79,7 +74,7 @@ public class CreatureGenerator : MonoBehaviour
     return transform.TransformVector(worldPos);
   }
 
-  void RandomizeCreature()
+  public void RandomizeCreature()
   {
     // build from scratch
     equippedBody = AddBody(transform);
@@ -97,9 +92,10 @@ public class CreatureGenerator : MonoBehaviour
     }
 
     GetLimbColliders(); // get independent bone colliders
+    built = true;
   }
 
-  void GetLimbColliders()
+  public void GetLimbColliders()
   {
     foreach(Limb lb in equippedLimbs)
     {
@@ -107,7 +103,7 @@ public class CreatureGenerator : MonoBehaviour
     }
   }
 
-  Body AddBody(Transform trs)
+  public Body AddBody(Transform trs)
   {
     Body bod = Instantiate(bodies.PickOne(), trs).GetComponent<Body>();
     bod.Initialize(this);
@@ -155,7 +151,7 @@ public class CreatureGenerator : MonoBehaviour
     limbToPickUp.transform.localEulerAngles = Vector3.zero;
   }
 
-  void RemoveLimb(int limbIndex)
+  public void RemoveLimb(int limbIndex)
   {
     // does not copy limb and drop it, just drops limb at given index and removes from list
     bool limbRemovedFlag = false;
@@ -185,7 +181,7 @@ public class CreatureGenerator : MonoBehaviour
     // print(equippedLimbs.Count);
   }
 
-  bool CheckLimbIndex(int limbIndexCheck)
+  public bool CheckLimbIndex(int limbIndexCheck)
   {
     // dead simple, check for id in equippedLimbs
     foreach(Limb lb in equippedLimbs)
@@ -198,7 +194,7 @@ public class CreatureGenerator : MonoBehaviour
     return false;
   }
 
-  void ConfigurePlayerPhysics(Body bod)
+  public void ConfigurePlayerPhysics(Body bod)
   {
     // add rigidbody to CREATURE object
     rb = gameObject.AddComponent<Rigidbody>();
@@ -233,7 +229,7 @@ public class CreatureGenerator : MonoBehaviour
 
   }
 
-  void ConfigureEnemyPhysics(Body bod)
+  public void ConfigureEnemyPhysics(Body bod)
   {
     // add rigidbody to CREATURE object
     // rb = gameObject.AddComponent<Rigidbody>();
@@ -264,7 +260,7 @@ public class CreatureGenerator : MonoBehaviour
     // cam.focus = bod.bodyPart;
   }
 
-  void GetAttachPoints(Body bod)
+  public void GetAttachPoints(Body bod)
   {
     // add attach point transforms to creature object
     AttachPoint[] bodyAttachPoints = bod.gameObject.GetComponentsInChildren<AttachPoint>();
@@ -323,11 +319,13 @@ public class CreatureGenerator : MonoBehaviour
   public void FixedUpdate()
   {
 
-    HandleLimbs();
-
-    if (isPlayer)
+    if (built)
     {
-      HandleInventory();
+      HandleLimbs();
+      if (isPlayer)
+      {
+        HandleInventory();
+      }
     }
 
   }
@@ -353,7 +351,6 @@ public class CreatureGenerator : MonoBehaviour
     // match limb idle targets to generator
     idleLimbObj.transform.position = equippedBody.transform.position - equippedBody.idlePositionOffset;
     idleLimbObj.transform.rotation = equippedBody.transform.rotation;
-
 
     foreach(BoneCollider bc in limbColliders)
     {
@@ -389,15 +386,15 @@ public class CreatureGenerator : MonoBehaviour
     Vector2 oldCameraOrbitAngles = orbitCam.orbitAngles;
 
     // do inventory if's
-    if (GameManager.me.inputManager.inventoryPressed && !GameManager.me.inputManager.inventoryOpen
-    && !GameManager.me.inputManager.aimPressed && !GameManager.me.inputManager.aiming)
+    if (playerManager.inputManager.inventoryPressed && !playerManager.inputManager.inventoryOpen
+    && !playerManager.inputManager.aimPressed && !playerManager.inputManager.aiming)
     {
       orbitCam.distance = 0.5f*oldCameraDist;
-      GameManager.me.inputManager.inventoryOpen = true;
+      playerManager.inputManager.inventoryOpen = true;
     }
 
     // inv 0 button
-    else if (GameManager.me.inputManager.inventory0Pressed && GameManager.me.inputManager.inventoryOpen)
+    else if (playerManager.inputManager.inventory0Pressed && playerManager.inputManager.inventoryOpen)
     {
       if (CheckLimbIndex(0)) // if have limb in slot, id is slot
       {
@@ -405,7 +402,7 @@ public class CreatureGenerator : MonoBehaviour
       }
     }
     // inv 1 button
-    else if (GameManager.me.inputManager.inventory1Pressed && GameManager.me.inputManager.inventoryOpen)
+    else if (playerManager.inputManager.inventory1Pressed && playerManager.inputManager.inventoryOpen)
     {
       if (CheckLimbIndex(1)) // if have limb in slot, id is slot
       {
@@ -413,7 +410,7 @@ public class CreatureGenerator : MonoBehaviour
       }
     }
     // inv 2 button
-    else if (GameManager.me.inputManager.inventory2Pressed && GameManager.me.inputManager.inventoryOpen)
+    else if (playerManager.inputManager.inventory2Pressed && playerManager.inputManager.inventoryOpen)
     {
       if (CheckLimbIndex(2)) // if have limb in slot, id is slot
       {
@@ -421,7 +418,7 @@ public class CreatureGenerator : MonoBehaviour
       }
     }
     // inv 3 button
-    else if (GameManager.me.inputManager.inventory3Pressed && GameManager.me.inputManager.inventoryOpen)
+    else if (playerManager.inputManager.inventory3Pressed && playerManager.inputManager.inventoryOpen)
     {
       if (CheckLimbIndex(3)) // if have limb in slot, id is slot
       {
@@ -431,28 +428,28 @@ public class CreatureGenerator : MonoBehaviour
 
     else if (targetedLimb != null)
     {
-      if (GameManager.me.inputManager.inventory0Pressed && !GameManager.me.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
+      if (playerManager.inputManager.inventory0Pressed && !playerManager.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
       {
         if (!CheckLimbIndex(0))
         {
           PickUpLimb(currentAttachPoints[0], targetedLimb, 0);
         }
       }
-      else if (GameManager.me.inputManager.inventory1Pressed && !GameManager.me.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
+      else if (playerManager.inputManager.inventory1Pressed && !playerManager.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
       {
         if (!CheckLimbIndex(1))
         {
           PickUpLimb(currentAttachPoints[1], targetedLimb, 1);
         }
       }
-      else if (GameManager.me.inputManager.inventory2Pressed && !GameManager.me.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
+      else if (playerManager.inputManager.inventory2Pressed && !playerManager.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
       {
         if (!CheckLimbIndex(2))
         {
           PickUpLimb(currentAttachPoints[2], targetedLimb, 2);
         }
       }
-      else if (GameManager.me.inputManager.inventory3Pressed && !GameManager.me.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
+      else if (playerManager.inputManager.inventory3Pressed && !playerManager.inputManager.inventoryOpen && targetedLimb.generatorNearFlag)
       {
         if (!CheckLimbIndex(3))
         {
@@ -460,10 +457,10 @@ public class CreatureGenerator : MonoBehaviour
         }
       }
     }
-    if (!GameManager.me.inputManager.inventoryPressed && GameManager.me.inputManager.inventoryOpen)
+    if (!playerManager.inputManager.inventoryPressed && playerManager.inputManager.inventoryOpen)
     {
       orbitCam.distance = 2.0f*oldCameraDist;
-      GameManager.me.inputManager.inventoryOpen = false;
+      playerManager.inputManager.inventoryOpen = false;
     }
   }
 
@@ -489,7 +486,7 @@ public class CreatureGenerator : MonoBehaviour
 
   public void Die()
   {
-    GameManager.me.particleContainer.PlayParticle(4, transform.position);
+    playerManager.particleContainer.PlayParticle(4, transform.position);
     // make limbs remove themselves too
     foreach(Limb lb in equippedLimbs)
     {

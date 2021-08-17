@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3133144672523155695
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3133144672523155689}
+  - component: {fileID: 3133144672523155688}
+  - component: {fileID: 3133144672523155690}
+  - component: {fileID: 3133144672523155691}
+  m_Layer: 0
+  m_Name: PlayerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3133144672523155689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3133144672523155695}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.20740783, y: 1.6032662, z: -7.794337}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3133144672523155688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3133144672523155695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07f0e09c52634bd4e9172cb6b247f5c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effects:
+  - {fileID: 2744712733975126944, guid: 40da6d211f2e2884cadeacf615f91181, type: 3}
+  - {fileID: 4161326744049947097, guid: 576575a65b3a6b241b056bdf2e78c866, type: 3}
+  - {fileID: 6450528319655511359, guid: 57b24d89a7bdabc49868e6b77f653eaa, type: 3}
+  - {fileID: 4271068549659605659, guid: 09a7c2527a525cc4a81e339e63783d9e, type: 3}
+  - {fileID: 907120536033556234, guid: bfd007920c0b6854e8f8441301d3d96f, type: 3}
+--- !u!114 &3133144672523155690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3133144672523155695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec058271aea10da478cd742ff83daf6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controlsEnabled: 0
+  movementInput: {x: 0, y: 0, z: 0}
+  movementPressed: 0
+  inventoryPressed: 0
+  aimPressed: 0
+  slidePressed: 0
+  shootPressed: 0
+  punchPressed: 0
+  runPressed: 0
+  jumpPressed: 0
+  rollPressed: 0
+  inventory0Pressed: 0
+  inventory1Pressed: 0
+  inventory2Pressed: 0
+  inventory3Pressed: 0
+  inventory4Pressed: 0
+  inventoryOpen: 0
+  aiming: 0
+  isSliding: 0
+--- !u!114 &3133144672523155691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3133144672523155695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa94df3138af0a54da08bcf7c7534b05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particleContainer: {fileID: 0}
+  inputManager: {fileID: 0}
+  player: {fileID: 0}

@@ -22,7 +22,7 @@ public class Arm : Limb
     if (initialized)
     {
 
-      if (GameManager.me.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
+      if (playerManager.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
       {
         if (generator.GetRandomArm() == this && !generator.CheckPunching())
         {

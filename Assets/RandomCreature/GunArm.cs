@@ -26,7 +26,7 @@ public class GunArm : Limb
     {
       OrbitCamera orbitCam = generator.cameraTransform.gameObject.GetComponent<OrbitCamera>();
       // target.LookAt(orbitCam.aimTarget);
-      if (InputManager.instance.aiming)
+      if (playerManager.inputManager.aiming)
       {
         Vector3 newPosition = Vector3.SmoothDamp(target.position,  idleTarget.position + aimingOffset[0]*generator.transform.up, ref refVelocity, positionSmoothTime);
         target.position = newPosition;
@@ -44,11 +44,11 @@ public class GunArm : Limb
         bone.rotation = Quaternion.LookRotation(generator.transform.forward, generator.transform.up);
       }
       // handle shootin'
-      if (InputManager.instance.shootPressed && !shotOnCooldown)
+      if (playerManager.inputManager.shootPressed && !shotOnCooldown)
       {
-        GameManager.me.particleContainer.PlayParticle(3, bone.position + bone.forward, transform);
+        playerManager.particleContainer.PlayParticle(3, bone.position + bone.forward, transform);
         Projectile bullet = Instantiate(bulletMold, bone.position + bone.forward, Quaternion.Euler(0.0f, 0.0f, 0.0f));
-        bullet.Fire(bone.forward, layerMask);
+        bullet.Fire(bone.forward, layerMask, playerManager);
 
         shotOnCooldown = true;
         shotCooldownCounter += 1/rof;

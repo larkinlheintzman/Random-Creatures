@@ -30,14 +30,10 @@ public class Projectile : MonoBehaviour
   public float damage = 0.5f;
   [SerializeField]
   public ParticleSystem trailParticles;
-  public ParticleContainer particleContainer;
+  [HideInInspector]
+  public PlayerManager playerManager;
 
-  public void Awake()
-  {
-    particleContainer = GameObject.Find("GameManager").GetComponent<ParticleContainer>();
-  }
-
-  public void Fire(Vector3 direction, LayerMask layerMask)
+  public void Fire(Vector3 direction, LayerMask layerMask, PlayerManager playerManager)
   {
     // transform.position = position;
     this.gameObject.name = "bullet";
@@ -51,6 +47,7 @@ public class Projectile : MonoBehaviour
     this.destroyFlag = false;
     this.direction = direction;
     this.trailParticles.Play();
+    this.playerManager = playerManager;
   }
 
   void OnTriggerEnter(Collider col)
@@ -59,9 +56,7 @@ public class Projectile : MonoBehaviour
     {
       if(layerMask == (layerMask | 1 << col.gameObject.layer))
       {
-        // Debug.Log("bullet impact detected!");
-        // impactParticles.Play();
-        particleContainer.PlayParticle(2, transform.position);
+        playerManager.particleContainer.PlayParticle(2, transform.position);
         Health health = col.gameObject.GetComponent<Health>();
         if (health != null)
         {

@@ -64,6 +64,8 @@ public class Limb : MonoBehaviour
   public Vector3 previousPosition = Vector3.zero;
   [HideInInspector]
   public Vector3 idlePositionOffset = Vector3.zero;
+  [HideInInspector]
+  public PlayerManager playerManager;
 
   private Vector3 smoothRefVelocity = Vector3.zero;
   private CreatureGenerator[] creatureGenerators; // all creature creatureGenerators in scene
@@ -108,6 +110,7 @@ public class Limb : MonoBehaviour
     this.smoothTarget = new GameObject().transform;
     this.smoothTarget.parent = gameObject.transform;
     this.smoothTarget.position = target.position;
+    this.playerManager = gen.playerManager;
 
     // inputs = new CharacterInputs();
     // inputs.controls.Enable();
@@ -217,7 +220,7 @@ public class Limb : MonoBehaviour
 
       if (generator.isPlayer)
       {
-        if (InputManager.instance.inventoryPressed)
+        if (playerManager.inputManager.inventoryPressed)
         {
           infoText.TextEnable(true);
         }
