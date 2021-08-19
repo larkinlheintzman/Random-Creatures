@@ -4,8 +4,16 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-Leg	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^public class Leg : Limb$/;"	class	line:6
-FixedUpdate	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  private void FixedUpdate()$/;"	method	line:10	class:Leg	file:	signature:()
-AngleToes	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  void AngleToes(Vector3 normal)$/;"	method	line:53	class:Leg	file:	signature:(Vector3 normal)
-CheckNeedStep	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  bool CheckNeedStep()$/;"	method	line:59	class:Leg	file:	signature:()
-FindGround	C:\Users\Larkin\Random Creatures\Assets\RandomCreature\Leg.cs	/^  public virtual LimbPosition FindGround()$/;"	method	line:85	class:Leg	signature:()
+PlayerManager	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^public class PlayerManager : NetworkBehaviour$/;"	class	line:7
+player	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public Transform player;$/;"	field	line:10	class:PlayerManager
+playerCamera	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public Camera playerCamera;$/;"	field	line:11	class:PlayerManager
+particleContainer	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public ParticleContainer particleContainer;$/;"	field	line:12	class:PlayerManager
+inputManager	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public InputManager inputManager;$/;"	field	line:13	class:PlayerManager
+networkTransform	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public NetworkTransformChild networkTransform;$/;"	field	line:14	class:PlayerManager
+initialized	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public bool initialized = false;$/;"	field	line:15	class:PlayerManager
+playerId	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public int playerId = 0;$/;"	field	line:16	class:PlayerManager
+playerList	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public List<PlayerManager> playerList = new List<PlayerManager>();$/;"	field	line:17	class:PlayerManager
+Initialize	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void Initialize()$/;"	method	line:19	class:PlayerManager	signature:()
+UpdateClientList	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void UpdateClientList(List<PlayerManager> plerList)$/;"	method	line:64	class:PlayerManager	signature:(List<PlayerManager> plerList)
+UpdateClients	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void UpdateClients()$/;"	method	line:70	class:PlayerManager	signature:()
+OnStartClient	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public override void OnStartClient()$/;"	method	line:94	class:PlayerManager	signature:()

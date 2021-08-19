@@ -112,22 +112,6 @@ public class Limb : MonoBehaviour
     this.smoothTarget.position = target.position;
     this.playerManager = gen.playerManager;
 
-    // inputs = new CharacterInputs();
-    // inputs.controls.Enable();
-    //
-    // inputs.controls.XAxis.performed += ctx =>
-    // {
-    //   currentDirectionalInput.x = ctx.ReadValue<float>();
-    //   currentDirectionalInput.Normalize();
-    //   movementPressed = currentDirectionalInput.x != 0 || currentDirectionalInput.z != 0;
-    // };
-    // inputs.controls.ZAxis.performed += ctx =>
-    // {
-    //   currentDirectionalInput.z = ctx.ReadValue<float>();
-    //   currentDirectionalInput.Normalize();
-    //   movementPressed = currentDirectionalInput.x != 0 || currentDirectionalInput.z != 0;
-    // };
-
     GameObject textCanvasObject = GameObject.Find("TextCanvas");
     this.textObject = new GameObject();
     this.textObject.transform.parent = textCanvasObject.transform;

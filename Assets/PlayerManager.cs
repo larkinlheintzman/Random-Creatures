@@ -7,60 +7,100 @@ using UnityEngine;
 public class PlayerManager : NetworkBehaviour
 {
 
-  // #region Singleton
-
   public Transform player;
   public Camera playerCamera;
   public ParticleContainer particleContainer;
   public InputManager inputManager;
+  public CreatureGenerator creatureGenerator;
   public NetworkTransformChild networkTransform;
+  public Camera lobbyCamera;
+  public AudioListener lobbyAudio;
   public bool initialized = false;
 
-  public void Initialize() // start here because awake is too fast
+  public void Initialize()
   {
-
     networkTransform = GetComponent<NetworkTransformChild>();
-    networkTransform.clientAuthority = true; // ??
+    networkTransform.clientAuthority = true; // ?
+
+    GameObject lobbyCameraObject = GameObject.Find("LobbyCamera");
+    lobbyCamera = lobbyCameraObject.GetComponent<Camera>();
+    lobbyAudio = lobbyCameraObject.GetComponent<AudioListener>();
 
     Debug.Log("local player joining: " + isLocalPlayer.ToString());
     if (isLocalPlayer)
     {
-      this.inputManager = GetComponent<InputManager>();
-      this.inputManager.Initialize();
-      OrbitCamera orbitCamera = this.playerCamera.gameObject.GetComponent<OrbitCamera>();
+      inputManager = GetComponent<InputManager>();
+      inputManager.Initialize();
+
+      OrbitCamera orbitCamera = playerCamera.gameObject.GetComponent<OrbitCamera>();
       orbitCamera.Initialize();
-      this.particleContainer = GetComponent<ParticleContainer>();
+      particleContainer = GetComponent<ParticleContainer>();
+
       // turn off lobby camera and turn on own
-      GameObject.Find("LobbyCamera").SetActive(false);
-      CreatureGenerator creatureGenerator = GetComponentInChildren<CreatureGenerator>(); // should only be 1
+      lobbyCamera.enabled = false;
+      lobbyAudio.enabled = false;
+      creatureGenerator = GetComponentInChildren<CreatureGenerator>(); // should only be 1
       creatureGenerator.RandomizeCreature(); // make pler
     }
     else
     {
       // turn off player manager and camera/listener
-      this.inputManager = GetComponent<InputManager>();
-      this.inputManager.isLocalPlayer = false;
-      this.inputManager.Initialize();
-      this.particleContainer = GetComponent<ParticleContainer>();
-
-      CreatureGenerator creatureGenerator = GetComponentInChildren<CreatureGenerator>(); // should only be 1
+      inputManager = GetComponent<InputManager>();
+      inputManager.isLocalPlayer = false;
+      particleContainer = GetComponent<ParticleContainer>();
+      creatureGenerator = GetComponentInChildren<CreatureGenerator>(); // should only be 1
       creatureGenerator.RandomizeCreature(); // make pler
 
-      this.playerCamera.gameObject.SetActive(false); // lazy. need to point client texts are localplayer camera
+      playerCamera.gameObject.SetActive(false); // lazy. need to point client texts are localplayer camera
     }
-    // NetworkIdentity netId = player.gameObject.GetComponent<NetworkIdentity>();
-    // netId.AssignClientAuthority(conn);
+
     initialized = true;
+  }
+
+  public void Update()
+  {
+      if(initialized && isLocalPlayer)
+      {
+        if (inputManager.inputsChangedFlag) {
+          inputManager.inputsChangedFlag = false;
+          Debug.Log("registered input change from player: " + netId.ToString());
+          SendInputsToServer(inputManager.PackageInputs());
+        }
+        // SendInputsToServer(inputManager.PackageInputs());
+
+      }
+  }
+
+  [Command]
+  public void SendInputsToServer(bool[] playerInputs)
+  {
+    // send inputs to all clients
+    SendInputsToClients(playerInputs);
+  }
+
+  [ClientRpc]
+  private void SendInputsToClients(bool[] playerInputs)
+  {
+    // only those clients that aren't players
+    if (!hasAuthority) inputManager.ReadInputs(playerInputs);
   }
 
   public override void OnStartClient()
   {
-    Debug.Log("starting up player obj!");
-    // NetworkIdentity clientId = conn.identity;
-    // PlayerManager playerManager = clientId.gameObject.GetComponent<PlayerManager>();
     Initialize();
   }
 
-  // #endregion
+  public override void OnStopClient()
+  {
+    if (isLocalPlayer)
+    {
+      lobbyCamera.enabled = true;
+      lobbyAudio.enabled = true;
+      // turn off own camera
+      playerCamera.gameObject.SetActive(false);
+    }
+    if (creatureGenerator != null) creatureGenerator.Die();
+    base.OnStopClient();
+  }
 
 }

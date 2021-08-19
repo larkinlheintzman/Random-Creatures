@@ -313,6 +313,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 743ed7e811666db4e956b04fc63f2529, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialized: 0
   pixelTexture: {fileID: 8400000, guid: 75ae05725d8e8e6499eabbc4251aa580, type: 2}
   focus: {fileID: 4108284488614028815}
   distance: 10
@@ -659,7 +660,6 @@ MonoBehaviour:
   limbs:
   - {fileID: -5943918332085871894, guid: ec7fd83151ff7cd4bb5fc730e963a78b, type: 3}
   - {fileID: 6494846650964511038, guid: 417dade6590846c43af55b8d6ee5b253, type: 3}
-  - {fileID: 7144654338790656893, guid: ca6b0d69c757b4d48960d1888b0532d8, type: 3}
   heads: []
   layerMask:
     serializedVersion: 2
@@ -959,6 +959,8 @@ MonoBehaviour:
   playerCamera: {fileID: 4108284487980783627}
   particleContainer: {fileID: 0}
   inputManager: {fileID: 0}
+  networkTransform: {fileID: 0}
+  initialized: 0
 --- !u!114 &2680135229832583592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -989,7 +991,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec058271aea10da478cd742ff83daf6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isLocalPlayer: 1
+  syncMode: 0
+  syncInterval: 0.05
   movementInput: {x: 0, y: 0, z: 0}
   movementPressed: 0
   inventoryPressed: 0

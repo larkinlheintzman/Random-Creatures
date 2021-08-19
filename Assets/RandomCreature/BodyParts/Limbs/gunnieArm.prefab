@@ -295,6 +295,7 @@ MonoBehaviour:
     m_Bits: 51
   nervousness: 0.02
   idleMoveScale: 0.05
+  positionSmoothTime: 0.1
   boneColliders:
   - {fileID: 5991514637691808930}
   - {fileID: 8645046465757933597}
@@ -303,17 +304,21 @@ MonoBehaviour:
   id: 0
   ik: {fileID: 0}
   target: {fileID: 0}
+  smoothTarget: {fileID: 0}
   player: {fileID: 0}
   generator: {fileID: 0}
   inMotion: 0
   previousPosition: {x: 0, y: 0, z: 0}
   idlePositionOffset: {x: 0, y: 0, z: 0}
-  particleContainer: {fileID: 0}
+  playerManager: {fileID: 0}
   bulletMold: {fileID: 618094635278639680, guid: 3ef159f629106724f92d5a0d4699d406, type: 3}
   launchForce: 100
-  positionSmoothTime: 0.1
   angleSmoothStep: 0.5
   aimingOffset: {x: 0.6, y: -0.2}
+  aimTarget: {fileID: 0}
+  aimLayerMask:
+    serializedVersion: 2
+    m_Bits: 251
   rof: 2
   shotOnCooldown: 0
   shotCooldownCounter: 0
@@ -402,6 +407,7 @@ MonoBehaviour:
   hitDelayCounter: 0
   rb: {fileID: 0}
   boneCollider: {fileID: 0}
+  other: {fileID: 0}
 --- !u!1 &2407439322934932599
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,6 +619,7 @@ MonoBehaviour:
   hitDelayCounter: 0
   rb: {fileID: 0}
   boneCollider: {fileID: 0}
+  other: {fileID: 0}
 --- !u!54 &8166308356605064020
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -729,6 +736,7 @@ MonoBehaviour:
   hitDelayCounter: 0
   rb: {fileID: 0}
   boneCollider: {fileID: 0}
+  other: {fileID: 0}
 --- !u!65 &8739094159225841191
 BoxCollider:
   m_ObjectHideFlags: 0

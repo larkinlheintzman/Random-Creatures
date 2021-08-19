@@ -1,16 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using Mirror;
 
 public class InputManager : MonoBehaviour
 {
-  #region Singleton
 
   public CharacterInputs inputs;
-  public bool isLocalPlayer = true;
-
   public Vector3 movementInput = Vector3.zero;
   public bool movementPressed = false;
+  public bool isLocalPlayer = true;
+  public bool inputsChangedFlag = false;
+  public bool[] previousInputs = new bool[16];
 
   public bool inventoryPressed = false;
   public bool aimPressed = false;
@@ -30,14 +32,61 @@ public class InputManager : MonoBehaviour
   public bool isSliding = false;
   public bool initialized = false;
 
+  public static bool CheckEquality<T>(T[] first, T[] second)
+  {
+    return first.SequenceEqual(second);
+  }
+
+  public bool[] PackageInputs()
+  {
+    // put bools into array to be passed around, needs to be generalized probably
+    bool[] inputArray = new bool[16];
+    inputArray[0] = inventoryPressed;
+    inputArray[1] = aimPressed;
+    inputArray[2] = slidePressed;
+    inputArray[3] = shootPressed;
+    inputArray[4] = punchPressed;
+    inputArray[5] = runPressed;
+    inputArray[6] = jumpPressed;
+    inputArray[7] = rollPressed;
+    inputArray[8] = inventory0Pressed;
+    inputArray[9] = inventory1Pressed;
+    inputArray[10] = inventory2Pressed;
+    inputArray[11] = inventory3Pressed;
+    inputArray[12] = inventory4Pressed;
+    inputArray[13] = inventoryOpen;
+    inputArray[14] = aiming;
+    inputArray[15] = isSliding;
+    return inputArray;
+  }
+
+  public void ReadInputs(bool[] inputArray)
+  {
+    inventoryPressed  = inputArray[0];
+    aimPressed        = inputArray[1];
+    slidePressed      = inputArray[2];
+    shootPressed      = inputArray[3];
+    punchPressed      = inputArray[4];
+    runPressed        = inputArray[5];
+    jumpPressed       = inputArray[6];
+    rollPressed       = inputArray[7];
+    inventory0Pressed = inputArray[8];
+    inventory1Pressed = inputArray[9];
+    inventory2Pressed = inputArray[10];
+    inventory3Pressed = inputArray[11];
+    inventory4Pressed = inputArray[12];
+    inventoryOpen     = inputArray[13];
+    aiming            = inputArray[14];
+    isSliding         = inputArray[15];
+  }
+
   public void Initialize()
   {
-    if (isLocalPlayer)
+    inputs = new CharacterInputs();
+    inputs.controls.Enable();
+
+    if (isLocalPlayer) // only local players can move, but attacks and such go through
     {
-
-      inputs = new CharacterInputs();
-      inputs.controls.Enable();
-
       // directional inputs
       inputs.controls.ZAxis.performed += ctx =>
       {
@@ -53,6 +102,8 @@ public class InputManager : MonoBehaviour
         movementPressed = movementInput.x != 0 || movementInput.z != 0;
 
       };
+
+    }
 
       inputs.controls.Inventory.performed += ctx =>
       {
@@ -212,9 +263,7 @@ public class InputManager : MonoBehaviour
 
       inputs.controls.Enable();
       Cursor.lockState = CursorLockMode.Locked;
-
-    }
-    initialized = true;
+      initialized = true;
   }
 
   public void Update()
@@ -224,6 +273,10 @@ public class InputManager : MonoBehaviour
       HandleSliding();
       HandleAiming();
       HandleInventory();
+      bool[] currentInputs = PackageInputs();
+      if (!CheckEquality(currentInputs, previousInputs)) inputsChangedFlag = true;
+      // else inputsChangedFlag = false;
+      previousInputs = currentInputs;
     }
   }
 
@@ -287,6 +340,5 @@ public class InputManager : MonoBehaviour
     }
   }
 
-  #endregion
 
 }

@@ -55,8 +55,6 @@ public class OrbitCamera : MonoBehaviour {
 
 	public Transform aimTarget;
 
-	public LayerMask aimLayerMask;
-
 	public Vector3 focusOffset = Vector3.zero;
 
 	Camera regularCamera;
@@ -113,7 +111,7 @@ public class OrbitCamera : MonoBehaviour {
 	void LateUpdate () {
 		if (rotationEnabled && initialized)
 		{
-			UpdateAimTargetPoint();
+			// UpdateAimTargetPoint();
 			UpdateFocusPoint();
 			Quaternion lookRotation;
 			if (ManualRotation() || AutomaticRotation()) {
@@ -175,18 +173,18 @@ public class OrbitCamera : MonoBehaviour {
 
   }
 
-	public void UpdateAimTargetPoint () {
-		RaycastHit hitInfo = new RaycastHit();
-		float maxRange = 500f;
-		if(Physics.Raycast (transform.position, transform.forward, out hitInfo, maxRange, aimLayerMask))
-		{
-			aimTarget.position = transform.position + transform.forward*hitInfo.distance;
-		}
-		else
-		{
-			aimTarget.position = transform.position + maxRange*transform.forward;
-		}
-	}
+	// public void UpdateAimTargetPoint () {
+	// 	RaycastHit hitInfo = new RaycastHit();
+	// 	float maxRange = 500f;
+	// 	if(Physics.Raycast (transform.position, transform.forward, out hitInfo, maxRange, aimLayerMask))
+	// 	{
+	// 		aimTarget.position = transform.position + transform.forward*hitInfo.distance;
+	// 	}
+	// 	else
+	// 	{
+	// 		aimTarget.position = transform.position + maxRange*transform.forward;
+	// 	}
+	// }
 
 	public void UpdateFocusPoint () {
 		previousFocusPoint = focusPoint;

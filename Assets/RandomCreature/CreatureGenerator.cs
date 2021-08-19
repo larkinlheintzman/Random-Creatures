@@ -28,6 +28,7 @@ public class CreatureGenerator : MonoBehaviour
   [HideInInspector]
   public Rigidbody rb;
   public OrbitCamera orbitCam;
+  public Transform aimTarget;
 
   [HideInInspector]
   public List<Head> equippedHeads = new List<Head>();
@@ -66,6 +67,9 @@ public class CreatureGenerator : MonoBehaviour
 
     playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
 
+    // add aim target
+      aimTarget = new GameObject().transform;
+      aimTarget.gameObject.name = "aim_target";
   }
 
   public Vector3 worldToPlayerSpace(Vector3 worldPos)
