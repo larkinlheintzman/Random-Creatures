@@ -4,11 +4,12 @@ namespace DitzelGames.FastIK
 {
     public class SampleRotator : MonoBehaviour
     {
-        
+      public float speed = 10;
+
         void Update()
         {
             //just rotate the object
-            transform.Rotate(0, Time.deltaTime * 90, 0);
+            transform.Rotate(0, Time.deltaTime * speed, 0);
         }
     }
 }
