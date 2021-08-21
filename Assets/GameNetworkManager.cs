@@ -1,26 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using Mirror;
 
 public class GameNetworkManager : NetworkManager
 {
 
-  public override void OnClientConnect(NetworkConnection conn)
-  {
-    Debug.Log("pler joined!");
-  }
+  // Set by UI element UsernameInput OnValueChanged
+  public string PlayerName { get; set; }
+  public TMP_InputField inputField;
 
-  public override void OnClientDisconnect(NetworkConnection conn)
+  // Called by UI element NetworkAddressInput.OnValueChanged
+  public void SetHostname()
   {
-    base.OnClientDisconnect(conn);
-    Debug.Log("pler left :(");
+      networkAddress = inputField.text;
   }
-
-  public override void OnStartClient()
-  {
-    Debug.Log("client started!");
-  }
+  // public override void OnClientConnect(NetworkConnection conn)
+  // {
+  //   Debug.Log("pler joined!");
+  // }
+  //
+  // public override void OnClientDisconnect(NetworkConnection conn)
+  // {
+  //   base.OnClientDisconnect(conn);
+  //   Debug.Log("pler left :(");
+  // }
+  //
+  // public override void OnStartClient()
+  // {
+  //   Debug.Log("client started!");
+  // }
 
   // public override void OnServerAddPlayer(NetworkConnection conn)
   // {
