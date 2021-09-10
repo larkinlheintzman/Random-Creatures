@@ -40,7 +40,8 @@ public class InputManager : MonoBehaviour
   public bool[] PackageInputs()
   {
     // put bools into array to be passed around, needs to be generalized probably
-    bool[] inputArray = new bool[16];
+    // bool[] inputArray = new bool[16];
+    bool[] inputArray = new bool[11];
     inputArray[0] = inventoryPressed;
     inputArray[1] = aimPressed;
     inputArray[2] = slidePressed;
@@ -49,14 +50,14 @@ public class InputManager : MonoBehaviour
     inputArray[5] = runPressed;
     inputArray[6] = jumpPressed;
     inputArray[7] = rollPressed;
-    inputArray[8] = inventory0Pressed;
-    inputArray[9] = inventory1Pressed;
-    inputArray[10] = inventory2Pressed;
-    inputArray[11] = inventory3Pressed;
-    inputArray[12] = inventory4Pressed;
-    inputArray[13] = inventoryOpen;
-    inputArray[14] = aiming;
-    inputArray[15] = isSliding;
+    // inputArray[8] = inventory0Pressed;
+    // inputArray[9] = inventory1Pressed;
+    // inputArray[10] = inventory2Pressed;
+    // inputArray[11] = inventory3Pressed;
+    // inputArray[12] = inventory4Pressed;
+    inputArray[8] = inventoryOpen;
+    inputArray[9] = aiming;
+    inputArray[10] = isSliding;
     return inputArray;
   }
 
@@ -70,14 +71,17 @@ public class InputManager : MonoBehaviour
     runPressed        = inputArray[5];
     jumpPressed       = inputArray[6];
     rollPressed       = inputArray[7];
-    inventory0Pressed = inputArray[8];
-    inventory1Pressed = inputArray[9];
-    inventory2Pressed = inputArray[10];
-    inventory3Pressed = inputArray[11];
-    inventory4Pressed = inputArray[12];
-    inventoryOpen     = inputArray[13];
-    aiming            = inputArray[14];
-    isSliding         = inputArray[15];
+    // inventory0Pressed = inputArray[8];
+    // inventory1Pressed = inputArray[9];
+    // inventory2Pressed = inputArray[10];
+    // inventory3Pressed = inputArray[11];
+    // inventory4Pressed = inputArray[12];
+    // inventoryOpen     = inputArray[13];
+    // aiming            = inputArray[14];
+    // isSliding         = inputArray[15];
+    inventoryOpen     = inputArray[8];
+    aiming            = inputArray[9];
+    isSliding         = inputArray[10];
   }
 
   public void Initialize()

@@ -5,21 +5,19 @@ using UnityEngine;
 public class BoneCollider : MonoBehaviour
 {
 
+  // attached rigidbody which must be there to hit ground
     public bool initialized = false;
     public Vector3 hitPoint = Vector3.zero;
     public bool isHit = false;
-    public int iFrames = 5;
-    public int hitDelayCounter = 0;
-    // attached rigidbody which must be there to hit ground
     public Rigidbody rb;
-    // attached boneCollider for toggling reasons
-    public Collider boneCollider;
     public Collider other; // thing that we hit
-    // interaction layer mask bc reasons
-    LayerMask layerMask;
+    public Collider boneCollider;
+    public int iFrames = 3;
+    public int hitDelayCounter = 0;
+    public LayerMask layerMask;
 
-
-    void OnTriggerEnter(Collider col)
+    // for kinematic contacts
+    public virtual void OnTriggerEnter(Collider col)
     {
       if(initialized && hitDelayCounter == 0)
       {
@@ -29,14 +27,11 @@ public class BoneCollider : MonoBehaviour
           hitDelayCounter = iFrames;
           hitPoint = col.gameObject.GetComponent<Collider>().ClosestPointOnBounds(transform.position);
           other = col;
-          // Debug.Log("hit detected!" + this.ToString());
-          // Debug.Log(this);
         }
       }
     }
-    // // do sumthing with layer masks!
 
-    public void ClearHit()
+    public virtual void ClearHit()
     {
       if (hitDelayCounter <= 0)
       {
@@ -46,7 +41,7 @@ public class BoneCollider : MonoBehaviour
       }
     }
 
-    void LateUpdate()
+    public virtual void LateUpdate()
     {
       if (hitDelayCounter > 0)
       {
@@ -54,25 +49,20 @@ public class BoneCollider : MonoBehaviour
       }
     }
 
-    public void Initialize(LayerMask layerMask)
+    public virtual void Initialize(LayerMask layerMask)
     {
       this.initialized = true;
       this.rb = GetComponent<Rigidbody>();
       this.boneCollider = GetComponent<Collider>();
       this.layerMask = layerMask;
-      // RedgeDollToggle(false);
     }
 
     // why do i do these things to myself
-    public void RedgeDollToggle(bool redge)
+    public virtual void RedgeDollToggle(bool redge)
     {
       // whatch these nots right herya
       rb.isKinematic = !redge;
       boneCollider.isTrigger = !redge;
-
-      // print("flipping bone:" + gameObject.ToString() + " " + redge);
     }
-
-    // aw fuck it https://forum.unity.com/threads/fix-ontriggerexit-will-now-be-called-for-disabled-gameobjects-colliders.657205/
 
 }

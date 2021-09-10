@@ -6,18 +6,12 @@ public class Health : MonoBehaviour
 {
   public float maxHealth;
   public float currentHealth;
-  public int steps;
   public CreatureGenerator gen;
 
-  // void Awake()
-  // {
-  //
-  // }
   public void Initialize(CreatureGenerator generator)
   {
-    maxHealth = 2f;
-    currentHealth = 2f;
-    steps = 4; // for later i guess
+    maxHealth = 100f;
+    currentHealth = 100f;
     gen = generator;
   }
 
@@ -27,9 +21,7 @@ public class Health : MonoBehaviour
     if (currentHealth <= 0.0f) // if ded
     {
       gen.Die();
-      // return true;
     }
-    // return false; // still kicking
   }
 
 }

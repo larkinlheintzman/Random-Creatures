@@ -14,20 +14,22 @@ public class Limb : MonoBehaviour
     public Vector3 groundNormal;
   }
 
+  [Header("Limb Motion")]
+
   public Transform bone;
   public Transform pole;
   public Transform idleTarget;
+  public InfoText infoText;
   public float stepRadius;
   public float limbLength;
   public float supportHeight;
-  public float motionHeight; // not general and i know it
-  public float motionSpeed;
   public float groundOffset;
   public float support = 1.0f;
   public float supportScaler = 1;
   public float twitchScale = 0.25f;
   public float twitchRandomScale = 0.1f;
-  public AnimationCurve motionSpeedCurve;
+
+  [Header("Debug Fields")]
 
   public bool generatorNearFlag = false;
   public bool playerNearFlag = false;
@@ -40,11 +42,16 @@ public class Limb : MonoBehaviour
   public float nervousness = 0.05f;
   public float idleMoveScale = 0.05f;
   public float positionSmoothTime = 0.01f;
+  public float rotationSmoothSpeed = 0.01f;
+  public float smoothTargetDistanceScale = 5f;
   public List<BoneCollider> boneColliders;
 
   public bool initialized = false;
   public int id;
   public FastIKFabric ik;
+
+  [Header("Damage Params")]
+  public float damage;
 
   [HideInInspector]
   public Transform target;
@@ -57,36 +64,44 @@ public class Limb : MonoBehaviour
   [HideInInspector]
   public CreatureGenerator generator;
   [HideInInspector]
-  public Motion motion;
-  [HideInInspector]
   public bool inMotion;
   [HideInInspector]
   public Vector3 previousPosition = Vector3.zero;
   [HideInInspector]
   public Vector3 idlePositionOffset = Vector3.zero;
   [HideInInspector]
-  public PlayerManager playerManager;
+  public Manager playerManager;
+  [HideInInspector]
+  public Trajectory traj;
+  [HideInInspector]
+  public int index; // limbs index in the generator limb list
 
   private Vector3 smoothRefVelocity = Vector3.zero;
   private CreatureGenerator[] creatureGenerators; // all creature creatureGenerators in scene
   private Vector3 currentDirectionalInput = Vector3.zero;
   private CharacterInputs inputs;
   private GameObject textObject;
-  private InfoText infoText;
 
   // private Outline outliner;
 
   public void Awake()
   {
     creatureGenerators = FindObjectsOfType<CreatureGenerator>(); // get all gens in scene
+
+
   }
 
-  public virtual void Initialize(CreatureGenerator gen, int id)
+  public virtual void Initialize(CreatureGenerator gen, int id, int limbIndex)
   {
     // id number
     this.id = id;
     // set starting positions
     this.player = gen.transform;
+    // move to generator's layer
+    this.gameObject.layer = gen.gameObject.layer;
+
+    // add trajectory handler
+    traj = gameObject.AddComponent<Trajectory>();
 
     // add ik script to end bone
     this.ik = bone.parent.gameObject.AddComponent<FastIKFabric>();
@@ -101,26 +116,40 @@ public class Limb : MonoBehaviour
     this.layerMask = gen.layerMask; // copy this over
     this.inMotion = false;
 
+    // get order of self in limb list, should not change in game
+    this.index = limbIndex;
+    // for (int i = 0; i < gen.limbs.Length; i++)
+    // {
+    //   if (gen.limbs[i] is this)
+    //   {
+    //     this.index = i; // our index in limb list
+    //     print($"limb got index {index}");
+    //     break;
+    //   }
+    // }
+
     foreach(BoneCollider boneCol in boneColliders)
     {
       boneCol.Initialize(layerMask);
     }
 
-    // setup smooth target
     this.smoothTarget = new GameObject().transform;
     this.smoothTarget.parent = gameObject.transform;
     this.smoothTarget.position = target.position;
+    this.ik.Target = smoothTarget;
     this.playerManager = gen.playerManager;
 
-    GameObject textCanvasObject = GameObject.Find("TextCanvas");
-    this.textObject = new GameObject();
-    this.textObject.transform.parent = textCanvasObject.transform;
-    this.textObject.name = "infoTextObject_limb" + id;
-    this.textObject.AddComponent<InfoText>();
-    this.infoText = textObject.GetComponent<InfoText>();
-    this.infoText.Initialize(textCanvasObject.GetComponent<Canvas>(), bone, generator, id);
+    // initialize information text per limb
+    this.infoText = Instantiate(infoText, transform.position, new Quaternion());
+    this.infoText.transform.SetParent(transform); // saves text from being deleted and makes nice hierarchy
+    this.infoText.Initialize(bone, generator, id);
 
     RedgeDollToggle(false);
+
+    // mark targets and text to not be deleted on load
+    DontDestroyOnLoad(target);
+
+
     this.initialized = true;
   }
 
@@ -142,10 +171,10 @@ public class Limb : MonoBehaviour
 
   public void Uninstall()
   {
-    Destroy(textObject);
-    Destroy(infoText.target.gameObject);
-    Destroy(target.gameObject);
-    Destroy(gameObject);
+    if (textObject != null) Destroy(textObject);
+    if (infoText.target.gameObject != null) Destroy(infoText.target.gameObject);
+    if (target.gameObject != null) Destroy(target.gameObject);
+    if (gameObject != null) Destroy(gameObject);
   }
 
   public virtual List<BoneCollider> GetBoneColliders()
@@ -194,7 +223,7 @@ public class Limb : MonoBehaviour
 
       if (drawRaycasts)
       {
-        Debug.DrawLine(target.position, previousPosition, Color.white, 1.5f);
+        Debug.DrawLine(smoothTarget.position, previousPosition, Color.white, 1.5f);
       }
 
       if (Random.value <= nervousness)
@@ -219,11 +248,14 @@ public class Limb : MonoBehaviour
       }
 
       // move towards target with smooth damp based on current speed
-      float dist = Vector3.Distance(previousPosition, target.position);
-      Vector3 newPosition = Vector3.SmoothDamp(smoothTarget.position, target.position + idlePositionOffset, ref smoothRefVelocity, positionSmoothTime/dist);
+      float dist = smoothTargetDistanceScale*Vector3.Distance(smoothTarget.position, target.position);
+      Vector3 newPosition = Vector3.SmoothDamp(smoothTarget.position, target.position, ref smoothRefVelocity, positionSmoothTime/dist);
       smoothTarget.position = newPosition;
+      // match bones rotation smoothly too
+      smoothTarget.rotation = Quaternion.Lerp(smoothTarget.rotation, target.rotation, rotationSmoothSpeed);
+      bone.rotation = smoothTarget.rotation;
 
-      previousPosition = target.position;
+      previousPosition = smoothTarget.position;
     }
     else
     {

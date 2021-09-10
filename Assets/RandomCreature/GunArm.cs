@@ -18,40 +18,18 @@ public class GunArm : Limb
   public float aimSpeed = 0.1f;
   private Vector3 refVelocity = Vector3.zero;
 
-  public void UpdateAimTargetPoint ()
-  {
-		RaycastHit hitInfo = new RaycastHit();
-		float maxRange = 500f;
-		if(Physics.Raycast (generator.transform.position, generator.transform.forward, out hitInfo, maxRange, aimLayerMask))
-		{
-			generator.aimTarget.position = generator.transform.position + generator.transform.forward*hitInfo.distance;
-		}
-		else
-		{
-			generator.aimTarget.position = generator.transform.position + maxRange*generator.transform.forward;
-		}
-	}
-
-  // public override void Initialize(CreatureGenerator gen, int id)
-  // {
-  //   base.Initialize(gen, id);
-  //
-  //   // make aim target for gun to aim at
-  // }
-
   private void FixedUpdate()
   {
     base.FrameUpdate();
 
     if (initialized)
     {
-      UpdateAimTargetPoint();
+      // UpdateAimTargetPoint();
       if (playerManager.inputManager.aiming)
       {
-        Vector3 newPosition = Vector3.SmoothDamp(target.position,  idleTarget.position + aimingOffset[0]*generator.transform.up, ref refVelocity, positionSmoothTime);
-        target.position = newPosition;
+        target.position = idleTarget.position + aimingOffset[0]*generator.transform.up;
         Quaternion oldRotation = bone.rotation;
-        bone.LookAt(generator.aimTarget);
+        bone.LookAt(generator.playerManager.aimTarget);
         Debug.DrawLine(bone.position, bone.position + bone.forward*100f, Color.white, 0.1f);
         Quaternion newRotation = bone.rotation;
         bone.rotation = Quaternion.Lerp(oldRotation, newRotation, aimSpeed);
@@ -59,8 +37,7 @@ public class GunArm : Limb
       }
       else
       {
-        Vector3 newPosition = Vector3.SmoothDamp(target.position,  idleTarget.position + aimingOffset[1]*generator.transform.up, ref refVelocity, positionSmoothTime);
-        target.position = newPosition;
+        target.position = idleTarget.position + aimingOffset[1]*generator.transform.up;
         bone.rotation = Quaternion.LookRotation(generator.transform.forward, generator.transform.up);
       }
       // handle shootin'
@@ -68,7 +45,7 @@ public class GunArm : Limb
       {
         playerManager.particleContainer.PlayParticle(3, bone.position + bone.forward, transform);
         Projectile bullet = Instantiate(bulletMold, bone.position + bone.forward, Quaternion.Euler(0.0f, 0.0f, 0.0f));
-        bullet.Fire(bone.forward, layerMask, playerManager);
+        bullet.Fire(bone.forward, playerManager);
 
         shotOnCooldown = true;
         shotCooldownCounter += 1/rof;

@@ -61,11 +61,6 @@ public class Motion
 
   }
 
-  // public List<Motion> BuildMotion()
-  // {
-  //
-  // }
-
   // move along path
   public Vector3 MotionUpdate(float timeElapsed)
   {

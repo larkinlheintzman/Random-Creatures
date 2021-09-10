@@ -90,9 +90,10 @@ MonoBehaviour:
   destroyFlag: 0
   layerMask:
     serializedVersion: 2
-    m_Bits: 51
+    m_Bits: 315
+  damage: 0.5
   trailParticles: {fileID: 3731914249952421438}
-  impactParticles: {fileID: 3063312969981879346}
+  playerManager: {fileID: 0}
 --- !u!1 &7689620745899534099
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,10 +302,5 @@ PrefabInstance:
 --- !u!4 &4289226684688409222 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5224623411854918539, guid: 57b24d89a7bdabc49868e6b77f653eaa, type: 3}
-  m_PrefabInstance: {fileID: 8288861636856897805}
-  m_PrefabAsset: {fileID: 0}
---- !u!198 &3063312969981879346 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 6450528319655511359, guid: 57b24d89a7bdabc49868e6b77f653eaa, type: 3}
   m_PrefabInstance: {fileID: 8288861636856897805}
   m_PrefabAsset: {fileID: 0}

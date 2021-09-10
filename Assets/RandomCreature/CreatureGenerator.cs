@@ -28,11 +28,11 @@ public class CreatureGenerator : MonoBehaviour
   [HideInInspector]
   public Rigidbody rb;
   public OrbitCamera orbitCam;
-  public Transform aimTarget;
 
-  [HideInInspector]
+  public int[] equippedLimbIds;
+  // [HideInInspector]
   public List<Head> equippedHeads = new List<Head>();
-  [HideInInspector]
+  // [HideInInspector]
   public List<Limb> equippedLimbs = new List<Limb>();
   // [HideInInspector]
   public List<Limb> nearbyLimbs = new List<Limb>();
@@ -45,7 +45,7 @@ public class CreatureGenerator : MonoBehaviour
   public MassController ctrl; // actual motion controller
   public Health health;
 
-  public PlayerManager playerManager;
+  public Manager playerManager;
 
   private GameObject idleLimbObj;
   private Vector3[] textOffsets;
@@ -54,32 +54,24 @@ public class CreatureGenerator : MonoBehaviour
   private List<BoneCollider> limbColliders = new List<BoneCollider>();
   private CapsuleCollider bodyCollider;
 
-  void Awake()
+  public int[] RandomizeCreature()
   {
-    // global helpful thangs
+    // do initial set up
     health = gameObject.AddComponent<Health>();
     health.Initialize(this);
 
     if (isPlayer)
     {
       orbitCam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
+      playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+    }
+    else
+    {
+      // do equivalant enemy manager! has particles/inputs/ so on
+      playerManager = gameObject.GetComponent<EnemyManager>();
     }
 
-    playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
 
-    // add aim target
-      aimTarget = new GameObject().transform;
-      aimTarget.gameObject.name = "aim_target";
-  }
-
-  public Vector3 worldToPlayerSpace(Vector3 worldPos)
-  {
-
-    return transform.TransformVector(worldPos);
-  }
-
-  public void RandomizeCreature()
-  {
     // build from scratch
     equippedBody = AddBody(transform);
     GetAttachPoints(equippedBody);
@@ -90,13 +82,78 @@ public class CreatureGenerator : MonoBehaviour
       ConfigureEnemyPhysics(equippedBody);
     }
 
-    // foreach(AttachPoint pt in currentAttachPoints)
-    for (int i=0; i<currentAttachPoints.Count; i++) {
-      AddRandomLimb(currentAttachPoints[i], i);
+    // select limb indexes from pool
+    int[] tempLimbIds = new int[currentAttachPoints.Count];
+    equippedLimbIds = new int[currentAttachPoints.Count];
+    for (int i = 0; i < currentAttachPoints.Count; i++) {
+      tempLimbIds[i] = Random.Range(0, limbs.Length);
+      print($"new limb id rolled: {tempLimbIds[i]}");
     }
+    equippedLimbIds = tempLimbIds;
+    SetLimbIds(equippedLimbIds);
+    playerManager.refreshLimbs = true;
 
     GetLimbColliders(); // get independent bone colliders
     built = true;
+    return equippedLimbIds;
+  }
+
+  public void SetLimbIds(int[] newIds)
+  {
+    // equippedLimbIds = newIds;
+    // make limbs list match what ids are set
+    for (int i=0; i < newIds.Length; i++)
+    {
+      if(newIds[i] < 0)
+      {
+        print($"NOT adding pt {i} idx {newIds[i]}");
+        if (CheckLimbIndex(i))
+        {
+          Limb ghostLimb = GetLimbAtIndex(i);
+          print($"removing for limb id : {i}");
+          // playerManager.DeleteLimb(ghostLimb);
+          // equippedLimbs[exId] = bit;
+          equippedLimbs.Remove(ghostLimb);
+          ghostLimb.Uninstall();
+          Destroy(ghostLimb);
+        }
+      }
+      else if (newIds[i] != equippedLimbIds[i])
+      {
+        print($"adding pt {i} idx {newIds[i]}");
+        AddLimb(currentAttachPoints[i], i, newIds[i]);
+      }
+      else if (!CheckLimbIndex(i) && newIds[i] >= 0)
+      {
+        print($"adding at empty pt {i} idx {newIds[i]}");
+        AddLimb(currentAttachPoints[i], i, newIds[i]);
+      }
+    }
+    equippedLimbIds = newIds;
+  }
+
+  public int[] GetLimbIds()
+  {
+    return equippedLimbIds;
+    // // gets limbs[] indexs of each equippedLimb
+    // int[] returnIds = new int[equippedLimbs.Count];
+    // int counter = 0;
+    // foreach(Limb lb in equippedLimbs)
+    // {
+    //   // returnIds[counter] = limbs.IndexOf(lb);
+    //   int limbsIndex = 0;
+    //   for (int i = 0; i<limbs.Length; i++)
+    //   {
+    //     if (limbs[i] == lb)
+    //     {
+    //       returnIds[counter] = limbsIndex;
+    //       break;
+    //     }
+    //   }
+    //   // returnIds[counter] = limbsIndex;
+    //   counter += 1;
+    // }
+    // return returnIds;
   }
 
   public void GetLimbColliders()
@@ -114,6 +171,33 @@ public class CreatureGenerator : MonoBehaviour
     return bod;
   }
 
+  public void AddLimb(AttachPoint pt, int id, int limbId)
+  {
+    // make room
+    // check if pt has limb already
+
+    if (CheckLimbIndex(id))
+    {
+      Limb ghostLimb = GetLimbAtIndex(id);
+      print($"removing for limb id : {id}");
+      // playerManager.DeleteLimb(ghostLimb);
+      // equippedLimbs[exId] = bit;
+      equippedLimbs.Remove(ghostLimb);
+      ghostLimb.Uninstall();
+      Destroy(ghostLimb);
+    }
+    Limb bit = Instantiate(limbs[limbId], pt.transform).GetComponent<Limb>();
+    bit.Initialize(this, id, limbId);
+    // spawn cross network
+    equippedLimbs.Add(bit);
+
+    // call sync operation
+
+    // put correct id in array
+    equippedLimbIds[id] = limbId;
+    playerManager.refreshLimbs = true;
+  }
+
   public void AddRandomLimb(AttachPoint pt, int id)
   {
     Limb[] ptLimbs = pt.GetLimbTypes();
@@ -122,20 +206,36 @@ public class CreatureGenerator : MonoBehaviour
       var restrictedLimbs = ptLimbs.Intersect(limbs);
       if (!restrictedLimbs.IsEmpty())
       {
-        Limb bit = Instantiate(restrictedLimbs.PickOne(), pt.transform).GetComponent<Limb>();
-        // Debug.Log(layerMask);
-        bit.Initialize(this, id);
+        // while have not found good index
+        bool indexFlag = false;
+        int tempIndex = 0;
+        int trueIndex = 0;
+        while(!indexFlag)
+        {
+          tempIndex = Random.Range(0, limbs.Length);
+          if (restrictedLimbs.Contains(limbs[tempIndex]))
+          {
+            indexFlag = true;
+            trueIndex = tempIndex;
+          }
+        }
+        Limb bit = Instantiate(limbs[trueIndex], pt.transform).GetComponent<Limb>();
+        bit.Initialize(this, id, trueIndex);
         equippedLimbs.Add(bit);
+        equippedLimbIds[trueIndex] = trueIndex;
       }
-      // return bit;
     }
     else
     {
-      Limb bit = Instantiate(limbs.PickOne(), pt.transform).GetComponent<Limb>();
-      bit.Initialize(this, id);
+      int ind = Random.Range(0, limbs.Length);
+      Limb bit = Instantiate(limbs[ind], pt.transform).GetComponent<Limb>();
+      bit.Initialize(this, id, ind);
       equippedLimbs.Add(bit);
+      equippedLimbIds[id] = ind;
       // return bit;
     }
+    // HACK land
+    playerManager.refreshLimbs = true;
   }
 
   public void PickUpLimb(AttachPoint pt, Limb limbToPickUp, int id)
@@ -153,16 +253,22 @@ public class CreatureGenerator : MonoBehaviour
     limbToPickUp.transform.localScale = Vector3.one;
     limbToPickUp.transform.localPosition = Vector3.zero;
     limbToPickUp.transform.localEulerAngles = Vector3.zero;
+
+    // track limb ids
+    equippedLimbIds[id] = limbToPickUp.index;
+    playerManager.refreshLimbs = true;
+    // delete DAMGER
+    // playerManager.DeleteLimb(limbToPickUp.gameObject);
   }
 
-  public void RemoveLimb(int limbIndex)
+  public void RemoveLimb(int limbIdToRemove)
   {
     // does not copy limb and drop it, just drops limb at given index and removes from list
     bool limbRemovedFlag = false;
     List<Limb> newLimbList = new List<Limb>(equippedLimbs);
     foreach(Limb lb in equippedLimbs)
     {
-      if(lb.id == limbIndex)
+      if(lb.id == limbIdToRemove)
       {
         lb.transform.parent = null;
         lb.RedgeDollToggle(true);
@@ -173,16 +279,20 @@ public class CreatureGenerator : MonoBehaviour
         lb.initialized = false;
         limbRemovedFlag = true;
         newLimbList.Remove(lb);
+        // spawn on network
+        // playerManager.netManager.spawnPrefabs.Add(lb.gameObject);
+        playerManager.SpawnLimb(lb.index);
       }
     }
 
     if (limbRemovedFlag)
     {
       equippedLimbs = newLimbList;
+      equippedLimbIds[limbIdToRemove] = -1;
+      playerManager.refreshLimbs = true;
+      // also call for sync operation
+      // playerManager.SendLimbIds(GetLimbIds());
     }
-
-    // print("limbs remaining in list:");
-    // print(equippedLimbs.Count);
   }
 
   public bool CheckLimbIndex(int limbIndexCheck)
@@ -198,6 +308,34 @@ public class CreatureGenerator : MonoBehaviour
     return false;
   }
 
+  public Limb GetLimbAtIndex(int limbIndex)
+  {
+    // dead simple, check for id in equippedLimbs
+    foreach(Limb lb in equippedLimbs)
+    {
+      if(lb.id == limbIndex)
+      {
+        return lb;
+      }
+    }
+    return null;
+  }
+
+  public int GetLimbIndex(int limbId)
+  {
+    // dead simple, returns list index of id
+    int idx = 0;
+    foreach(Limb lb in equippedLimbs)
+    {
+      if(lb.id == limbId)
+      {
+        return idx;
+      }
+      idx += 1;
+    }
+    return -1;
+  }
+
   public void ConfigurePlayerPhysics(Body bod)
   {
     // add rigidbody to CREATURE object
@@ -208,7 +346,7 @@ public class CreatureGenerator : MonoBehaviour
 
     // add physics controller to creature
     ctrl = gameObject.AddComponent<MassController>();
-    ctrl.Initialize(cameraTransform, this, rb);
+    ctrl.Initialize(this, rb);
 
     // add body's collider
     bodyCollider = bod.GetBodyCollider();
@@ -236,11 +374,14 @@ public class CreatureGenerator : MonoBehaviour
   public void ConfigureEnemyPhysics(Body bod)
   {
     // add rigidbody to CREATURE object
-    // rb = gameObject.AddComponent<Rigidbody>();
-    // rb.isKinematic = true;
-    // // add physics controller to creature
-    // ctrl = gameObject.AddComponent<MassController>();
-    // ctrl.Initialize(cameraTransform, this, rb);
+    rb = gameObject.AddComponent<Rigidbody>();
+    rb.mass = bod.motionMass;
+    rb.drag = bod.motionDrag;
+    rb.useGravity = true;
+
+    // add physics controller to creature
+    ctrl = gameObject.AddComponent<MassController>();
+    ctrl.Initialize(this, rb);
 
     // add body's collider
     bodyCollider = bod.GetBodyCollider();
@@ -488,16 +629,16 @@ public class CreatureGenerator : MonoBehaviour
     return desiredVelocity;
   }
 
-  public void Die()
+  public void Die(bool particlesFlag = true)
   {
-    playerManager.particleContainer.PlayParticle(4, transform.position);
+    if (particlesFlag && playerManager != null) playerManager.particleContainer.PlayParticle(4, transform.position);
     // make limbs remove themselves too
     foreach(Limb lb in equippedLimbs)
     {
       lb.Uninstall();
     }
-    Object.Destroy(this.gameObject);
-
+    gameObject.SetActive(false);
+    // to be respawned later
   }
 
 }

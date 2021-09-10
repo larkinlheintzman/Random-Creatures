@@ -9,11 +9,6 @@ public class Arm : Limb
   private float motionEndTime = 0.0f;
   private Vector3 refVelocity = Vector3.zero;
 
-  // public override void IdlePosition()
-  // {
-  //
-  // }
-
   // Update is called once per frame
   private void FixedUpdate()
   {
@@ -32,7 +27,8 @@ public class Arm : Limb
           Vector3 yChange = new Vector3(bone.position.x, idleTarget.position.y, bone.position.z);
           Vector3 final = yChange + limbLength*player.forward;
 
-          motion = new Motion(starting, final, generator.equippedBody.transform, Motion.PathType.line, Motion.LookType.normal, motionSpeedCurve, player.forward, layerMask, false);
+          traj.NewTraj(starting, final, target, generator.transform, new TrajParams());
+          // motion = new Motion(starting, final, generator.equippedBody.transform, Motion.PathType.line, Motion.LookType.normal, motionSpeedCurve, player.forward, layerMask, false);
 
           inMotion = true;
         }
@@ -41,26 +37,14 @@ public class Arm : Limb
       if (!inMotion)
       {
         // sidle on up to idle position
-
-        // Vector3 angleOffset = idleMoveScale*(Mathf.Sin(randAngle)*generator.transform.up + Mathf.Cos(randAngle)*generator.transform.right);
-
-        // apply return force
-        float distanceScaler = Mathf.Clamp(1.0f/(previousPosition -idleTarget.position).sqrMagnitude, 0.001f, 10.0f);
-
-        Vector3 newPosition = Vector3.SmoothDamp(previousPosition, idleTarget.position + idlePositionOffset, ref refVelocity, positionSmoothTime*distanceScaler);
-
-        // Vector3 newVerticalPosition = Vector3.SmoothDamp(previousPosition, idleTarget.position + idlePositionOffset, ref refVelocity, 0.5f*positionSmoothTime*distanceScaler);
-
-        target.position = newPosition;
+        target.position = idleTarget.position + idlePositionOffset;
 
       }
 
       if (inMotion)
       {
-        target.position = motion.MotionUpdate(Time.deltaTime);
-        target.rotation = motion.RotationUpdate(Time.deltaTime);
 
-        if (motion.complete)
+        if (traj.done)
         {
           inMotion = false;
           motionEndTime = Time.time;

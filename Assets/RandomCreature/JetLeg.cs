@@ -19,26 +19,13 @@ public class JetLeg : Limb
     if (initialized)
     {
 
-      // update position smoothally
+      // update position
       Vector3 accVector = generator.rb.velocity - previousVelocity;
-      // accVector.Normalize
-      // idleCounter += (Random.value + 1.0f)*Time.deltaTime;
-      // Vector3 idleOffset = 0.1f*generator.equippedBody.transform.up*Mathf.Sin(idleCounter);
-      Vector3 targetPosition = idleTarget.position + jetMovementScale*accVector + idlePositionOffset;
-
-      // Vector3 newVerticalPosition = Vector3.SmoothDamp(previousPosition, targetPosition, ref smoothVel, 0.5f*positionSmoothTime);
-
-      Vector3 newPosition = Vector3.SmoothDamp(previousPosition, targetPosition, ref smoothVel, positionSmoothTime);
-
-      // target.position = new Vector3(newPosition.x, newVerticalPosition.y, newPosition.z);
-      target.position = newPosition;
-
+      target.position = idleTarget.position + jetMovementScale*accVector + idlePositionOffset;
       previousVelocity = generator.rb.velocity;
-
 
       // update bone rotation samely
       Quaternion newBoneRotation = Quaternion.FromToRotation(generator.transform.up, generator.transform.up + jetTiltScale*accVector);
-
       bone.rotation = Quaternion.Lerp(bone.rotation, newBoneRotation, jetTiltSpeed);
 
     }

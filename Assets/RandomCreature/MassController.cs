@@ -10,9 +10,8 @@ public class MassController : MonoBehaviour
 
   public Rigidbody rb;
   CharacterInputs input;
-  public Transform playerInputSpace;
   public CreatureGenerator generator;
-  public PlayerManager playerManager;
+  public Manager playerManager;
 
   public Vector3 currentPosition;
   public Vector3 currentVelocity;
@@ -70,7 +69,7 @@ public class MassController : MonoBehaviour
     lastMappedMoveLook = transform.forward;
   }
 
-  public void Initialize(Transform inputSpace, CreatureGenerator gen, Rigidbody rigidbod)
+  public void Initialize(CreatureGenerator gen, Rigidbody rigidbod)
   {
 
     // copy all es shit
@@ -83,7 +82,6 @@ public class MassController : MonoBehaviour
     generator = gen;
     layerMask = gen.layerMask;
 
-    playerInputSpace = inputSpace;
     isJumping = false;
     initalized = true;
     playerManager = gen.playerManager;
@@ -173,16 +171,18 @@ public class MassController : MonoBehaviour
       }
     }
     swing.Normalize();
-    if (generator.isPlayer && motionFlag)
+
+    if (!generator.isPlayer && generator.playerManager.lookEnabled)
     {
-      Quaternion swingLookRotation = Quaternion.LookRotation(Vector3.Reflect(swing, transform.right), Vector3.up);
-      desiredLookRotation = Quaternion.Lerp(transform.rotation, swingLookRotation, swingTurnMult*rotationSpeed);
+      // if is not player, look at target if it's in range
+      desiredLookRotation = Quaternion.LookRotation(generator.playerManager.target.position - transform.position, Vector3.up);
     }
 
-    if (!generator.isPlayer)
+    // if (motionFlag)
+    if (false)
     {
-      // needs brains
-      desiredLookRotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+      Quaternion swingLookRotation = Quaternion.LookRotation(Vector3.Reflect(swing, transform.right), Vector3.up);
+      desiredLookRotation = Quaternion.Lerp(desiredLookRotation, swingLookRotation, swingTurnMult*rotationSpeed);
     }
 
     // tilt body in direction of acceleration

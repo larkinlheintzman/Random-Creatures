@@ -6,22 +6,18 @@ public class SwordArm : Limb
 {
 
   public float repeatPeriod = 0.1f;
+  public float impactForce = 500.0f;
   public float swingAngle = Mathf.PI/2;
-  public BoneCollider edgeCollider;
+  public MeleeCollider edgeCollider;
   public ParticleSystem swingParticles;
-  public float damage = 2f;
   private float motionEndTime = 0.0f;
   private Vector3 refVelocity = Vector3.zero;
+  private Quaternion previousRotation = new Quaternion();
 
-  // public override void IdlePosition()
-  // {
-  //
-  // }
-
-  public override void Initialize(CreatureGenerator generator, int id)
+  public override void Initialize(CreatureGenerator generator, int id, int limbIndex)
   {
-    base.Initialize(generator, id);
-    edgeCollider = bone.gameObject.GetComponent<BoneCollider>();
+    base.Initialize(generator, id, limbIndex);
+    edgeCollider = bone.gameObject.GetComponent<MeleeCollider>();
   }
 
   // Update is called once per frame
@@ -32,89 +28,96 @@ public class SwordArm : Limb
     if (initialized)
     {
 
+      // work out swing direction
+      Vector3 swingDir = generator.transform.rotation*Vector3.forward - previousRotation*Vector3.forward;
+
+      if (Vector3.Magnitude(swingDir) <= 0.001)
+      {
+        // not rotating, pick dir
+        if(Random.value > 0.5f) swingDir = generator.transform.right;
+        else swingDir = -generator.transform.right;
+      }
+      swingDir = Vector3.Normalize(swingDir);
+
       if (playerManager.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
       {
-        if (true)
-        {
-          // Vector3 swingDir = generator.swingDirection;
 
-          // Vector3 starting = new Vector3(bone.position.x, attachPoint.transform.position.y, bone.position.z);
+        Debug.DrawLine(generator.transform.position + generator.transform.rotation*Vector3.forward, generator.transform.position + generator.transform.rotation*Vector3.forward + swingDir, Color.blue, 2.0f);
 
-          // Vector3 yChange = new Vector3(bone.position.x, idleTarget.position.y, bone.position.z);
-          // float dir = 1.0f;
-          // if (Random.value > 0.5f)
-          // {
-          //   dir = -1.0f;
-          // }
-          float tempyval = Mathf.Sin(swingAngle);
-          // float tempxval = Mathf.Cos(swingAngle);
-          // Mathf.DeltaAngle(current, target);
-          // Vector3 startOffset = new Vector3(Mathf.Sin(swingAngle), 0.0f, Mathf.Cos(swingAngle));
-          Quaternion rotation = Quaternion.AngleAxis(swingAngle, Vector3.up);
-          Vector3 startOffset = rotation*(-Vector3.right);
-          rotation = Quaternion.AngleAxis(-swingAngle, Vector3.up);
-          Vector3 stopOffset = rotation*(-Vector3.right);
-          // startOffset.Normalize();
-          // stopOffset.Normalize();
+        Vector3 starting = new Vector3(limbLength*Mathf.Sin(swingAngle), 0.0f, limbLength*Mathf.Cos(swingAngle));
+        Vector3 final = new Vector3(limbLength*Mathf.Sin(-swingAngle), 0.0f, limbLength*Mathf.Cos(-swingAngle));
 
-          Vector3 starting = startOffset*limbLength;
-          Vector3 final = stopOffset*limbLength;
-          // Vector3 final = player.position + player.TransformVector(stopOffset*limbLength);
-          // Vector3 final = generator.equippedBody.transform.position;
 
-          motion = new Motion(starting, final, player, Motion.PathType.arc, Motion.LookType.normal, motionSpeedCurve, player.forward, layerMask, false);
+        // FUCK quaternions
+        // Quaternion swingRotation = Quaternion.LookRotation(generator.transform.forward, Vector3.Cross(swingDir, generator.transform.forward));
+        Quaternion swingRotation = Quaternion.LookRotation(Vector3.forward, Vector3.Cross(swingDir, generator.transform.forward));
+        starting = swingRotation*starting;
+        final = swingRotation*final;
 
-          inMotion = true;
-          // play swoosh particles
-          swingParticles.Play();
-        }
+        Debug.DrawLine(generator.transform.position, generator.transform.position + final, Color.red, 2.0f);
+        Debug.DrawLine(generator.transform.position, generator.transform.position + starting, Color.green, 2.0f);
+
+        traj.NewTraj(starting, final, target, generator.transform, new TrajParams());
+
+        inMotion = true;
+        // play swoosh particles
+        swingParticles.Play();
+
+        // make edge collider into non trigger
+        edgeCollider.boneCollider.isTrigger = false;
       }
 
       if (!inMotion)
       {
-        Vector3 newPosition = Vector3.SmoothDamp(previousPosition, idleTarget.position + idlePositionOffset, ref refVelocity, positionSmoothTime);
-        target.position = newPosition;
-
-        // derpy for now
+        target.position = idleTarget.position + idlePositionOffset;
         bone.rotation = Quaternion.LookRotation(player.up + player.forward, player.up);
-
-        //bone.rotation = stuff;
-
       }
 
       if (inMotion)
       {
-        target.position = motion.MotionUpdate(Time.deltaTime);
-        bone.rotation = motion.RotationUpdate(Time.deltaTime);
-        // bone.rotation = target.rotation;
+        // target.position = traj.MotionUpdate(Time.deltaTime);
+        // bone.rotation = traj.RotationUpdate(Time.deltaTime);
 
-        if (motion.complete)
+        if (traj.done)
         {
           inMotion = false;
           swingParticles.Stop();
+          edgeCollider.boneCollider.isTrigger = true;
           motionEndTime = Time.time;
-        }
-
-        if (edgeCollider.isHit)
-        {
-          inMotion = false;
-          swingParticles.Stop();
-          playerManager.particleContainer.PlayParticle(2, edgeCollider.hitPoint);
-          motionEndTime = Time.time;
-          Twitch(-bone.forward, twitchScale, twitchRandomScale);
-
-          // particleContainer.PlayParticle(2, transform.position);
-          Health health = edgeCollider.other.gameObject.GetComponent<Health>();
-          if (health != null)
-          {
-            health.Damage(damage);
-          }
         }
       }
+      previousRotation = generator.transform.rotation;
+    }
+  }
 
-      // do something on hit too
+  public void DoHit(Collision col)
+  {
+    inMotion = false;
+    swingParticles.Stop();
+    edgeCollider.boneCollider.isTrigger = true;
+    print(col.collider.gameObject.name);
+    if (col.contactCount > 0)
+    {
+      if (col == null) return;
+      print($"contact point {col.GetContact(0).point}");
+      playerManager.particleContainer.PlayParticle(2, col.GetContact(0).point);
+    }
+    motionEndTime = Time.time;
+    Twitch(-bone.forward, twitchScale, twitchRandomScale);
+
+    // if we hit something with a health bar, tick it
+    Health otherHealth = col.collider.gameObject.GetComponent<Health>();
+    if (otherHealth != null)
+    {
+      otherHealth.Damage(damage);
     }
 
+    // put heat on thing we hit
+    Rigidbody hitRb = col.gameObject.GetComponent<Rigidbody>();
+    if (hitRb != null)
+    {
+      hitRb.AddForce(Vector3.Normalize(col.impulse)*impactForce);
+    }
   }
 
 }

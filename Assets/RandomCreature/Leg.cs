@@ -23,7 +23,10 @@ public class Leg : Limb
           Vector3 starting = target.position - player.position;
           Vector3 final = pos.worldPosition - player.position;// + groundOffset*transform.up;
           // put fuckin better angling stuff into motion
-          motion = new Motion(starting, final, player, Motion.PathType.parabola, Motion.LookType.player, motionSpeedCurve, Vector3.up, layerMask, false);
+          TrajParams pars = new TrajParams();
+          pars.trajType = Trajectory.TrajType.parabola;
+          traj.NewTraj(starting, final, target, generator.transform, new TrajParams());
+          // motion = new Motion(starting, final, player, Motion.PathType.parabola, Motion.LookType.player, motionSpeedCurve, Vector3.up, layerMask, false);
 
           inMotion = true;
         }
@@ -38,10 +41,10 @@ public class Leg : Limb
       else if (inMotion)
       {
         // Debug.Log("position found was grounded");
-        target.position = motion.MotionUpdate(Time.deltaTime);
-        target.rotation = motion.RotationUpdate(Time.deltaTime);
+        // target.position = motion.MotionUpdate(Time.deltaTime);
+        // target.rotation = motion.RotationUpdate(Time.deltaTime);
 
-        if (motion.complete)
+        if (traj.done)
         {
           inMotion = false;
           // AngleToes(pos.groundNormal); // stay pointing the same way

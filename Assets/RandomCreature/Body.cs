@@ -6,13 +6,11 @@ public class Body : MonoBehaviour
 {
 
   // just body things
-  // private Rigidbody rb;
   private Vector3 previousPosition;
   private CreatureGenerator generator;
 
   private bool initialized = false;
   private Vector3 smoothVel = Vector3.zero;
-  // private Vector3 previousVelocity = Vector3.zero;
   [HideInInspector]
   public Vector3 idlePositionOffset = Vector3.zero;
 
@@ -39,8 +37,8 @@ public class Body : MonoBehaviour
     generator = gen; // copy over generator stuff
     previousPosition = generator.transform.position;
 
-    // Debug.Log("limbIdleTransform:");
-    // Debug.Log(limbIdleTransform);
+    gameObject.layer = generator.gameObject.layer;
+    limbIdleTransform.gameObject.layer = generator.gameObject.layer;
 
     initialized = true;
 
@@ -75,22 +73,6 @@ public class Body : MonoBehaviour
 
 
       transform.position = new Vector3(newPosition.x, newVerticalPosition.y, newPosition.z);
-
-      // // tilt body in direction of acceleration
-      // Vector3 accVector = generator.rb.velocity - previousVelocity;
-      //
-      //
-      // Quaternion newRotation = new Quaternion();
-      // newRotation.SetFromToRotation(transform.up, generator.transform.up + tiltScale*accVector);
-      // newRotation = newRotation * transform.rotation;
-      //
-      // transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, tiltSpeed);
-      //
-      // // slllooooowwwwlllyyy approach generator transform
-      // transform.rotation = Quaternion.Lerp(transform.rotation, generator.transform.rotation, 0.001f);
-      //
-      // transform.LookAt(generator.transform.position + generator.transform.forward);
-
       previousPosition = transform.position;
       // previousVelocity = generator.rb.velocity;
 

@@ -31,9 +31,9 @@ public class Projectile : MonoBehaviour
   [SerializeField]
   public ParticleSystem trailParticles;
   [HideInInspector]
-  public PlayerManager playerManager;
+  public Manager playerManager;
 
-  public void Fire(Vector3 direction, LayerMask layerMask, PlayerManager playerManager)
+  public void Fire(Vector3 direction, Manager playerManager)
   {
     // transform.position = position;
     this.gameObject.name = "bullet";
@@ -42,7 +42,6 @@ public class Projectile : MonoBehaviour
     // this.meshRenderer = GetComponent<MeshRenderer>();
 
     this.col.isTrigger = true;
-    this.layerMask = layerMask;
     this.initialized = true;
     this.destroyFlag = false;
     this.direction = direction;
@@ -66,18 +65,6 @@ public class Projectile : MonoBehaviour
       }
     }
   }
-
-  // void OnTriggerExit(Collider col)
-  // {
-  //   if(initialized)
-  //   {
-  //     if(layerMask == (layerMask | 1 << col.gameObject.layer))
-  //     {
-  //       // Debug.Log("bullet deleted!");
-  //       // Destroy(gameObject);
-  //     }
-  //   }
-  // }
 
   void Update()
   {

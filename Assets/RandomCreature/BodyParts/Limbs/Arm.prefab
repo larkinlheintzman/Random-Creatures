@@ -168,6 +168,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2289196264801084478}
   - component: {fileID: 5526286922841880384}
+  - component: {fileID: 6446285929613801918}
   m_Layer: 2
   m_Name: Arm
   m_TagString: Untagged
@@ -207,82 +208,17 @@ MonoBehaviour:
   bone: {fileID: 2318215688476519749}
   pole: {fileID: 1776747999116061371}
   idleTarget: {fileID: 6057449976169387921}
+  infoText: {fileID: 6336678912458821004, guid: 608e4b6ab13af474e9aa262282509733, type: 3}
   stepRadius: 1.56
   limbLength: 1.78
-  motionHeight: 2.87
-  motionSpeed: 2.5
+  supportHeight: 0
   groundOffset: 0.05
   support: 1
   supportScaler: 0
-  supportCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0.007820129
-      value: 0.9933777
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.9943497
-      value: 0.021093525
-      inSlope: 0.004054518
-      outSlope: 0.004054518
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.13960166
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1.5027723
-      value: -1.0019625
-      inSlope: -4.847475
-      outSlope: -4.847475
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.15547913
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  motionSpeedCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.1
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.3929957
-      value: 0.9984486
-      inSlope: 0.04744816
-      outSlope: 0.04744816
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.996521
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  twitchScale: 0.25
+  twitchRandomScale: 0.1
   generatorNearFlag: 0
   playerNearFlag: 0
-  outlineEnabled: 0
   drawRaycasts: 0
   raycastNumber: 15
   pointNumber: 607
@@ -291,19 +227,42 @@ MonoBehaviour:
     m_Bits: 51
   nervousness: 0.01
   idleMoveScale: 0.1
+  positionSmoothTime: 0.1
+  rotationSmoothSpeed: 0.01
+  smoothTargetDistanceScale: 5
   boneColliders: []
   initialized: 1
-  punchPressed: 0
   id: 0
   ik: {fileID: 0}
+  damage: 0
   target: {fileID: 0}
+  smoothTarget: {fileID: 0}
   player: {fileID: 0}
   generator: {fileID: 0}
   inMotion: 1
   previousPosition: {x: 0, y: 0, z: 0}
   idlePositionOffset: {x: 0, y: 0, z: 0}
-  positionSmoothTime: 0.05
+  playerManager: {fileID: 0}
+  traj: {fileID: 0}
+  index: 0
   repeatPeriod: 0.1
+--- !u!114 &6446285929613801918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2289196264801084473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  visible: 0
+  m_AssetId: c493d1a6079a171459a7ac3e71ac86cb
+  hasSpawned: 0
 --- !u!1 &2407439322934932599
 GameObject:
   m_ObjectHideFlags: 0

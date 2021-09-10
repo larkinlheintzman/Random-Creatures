@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Camera))]
 public class OrbitCamera : MonoBehaviour {
 
 	public bool initialized = false;
@@ -48,16 +47,17 @@ public class OrbitCamera : MonoBehaviour {
 	LayerMask obstructionMask = -1;
 
 	[SerializeField]
+	LayerMask aimLayerMask;
+
+	[SerializeField]
 	public Canvas aimingRecticle;
 
 	[SerializeField]
 	public bool rotationEnabled = false;
 
-	public Transform aimTarget;
-
 	public Vector3 focusOffset = Vector3.zero;
 
-	Camera regularCamera;
+	public Camera regularCamera;
 
   Mouse mouse;
 
@@ -81,6 +81,7 @@ public class OrbitCamera : MonoBehaviour {
 
 	public PlayerManager playerManager;
 
+
 	void OnValidate ()
 	{
 		if (maxVerticalAngle < minVerticalAngle) {
@@ -88,30 +89,23 @@ public class OrbitCamera : MonoBehaviour {
 		}
 	}
 
-	public void Initialize() {
-		regularCamera = GetComponent<Camera>();
+	public void Initialize()
+	{
+
+		// regularCamera = transform.GetChild(0).gameObject.GetComponentInChildren<Camera>();
 		focusPoint = focus.position;
 		transform.localRotation = Quaternion.Euler(orbitAngles);
     mouse = Mouse.current;
 		aimingRecticle.enabled = false;
 
-		aimTarget = new GameObject().transform;
-		aimTarget.gameObject.name = "AimTarget";
-
 		playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
-
 		initialized = true;
-
-
-		// pixelTexture.height = 200;
-		// pixelTexture.width = 200;
 	}
-
 
 	void LateUpdate () {
 		if (rotationEnabled && initialized)
 		{
-			// UpdateAimTargetPoint();
+			UpdateAimTargetPoint();
 			UpdateFocusPoint();
 			Quaternion lookRotation;
 			if (ManualRotation() || AutomaticRotation()) {
@@ -173,18 +167,18 @@ public class OrbitCamera : MonoBehaviour {
 
   }
 
-	// public void UpdateAimTargetPoint () {
-	// 	RaycastHit hitInfo = new RaycastHit();
-	// 	float maxRange = 500f;
-	// 	if(Physics.Raycast (transform.position, transform.forward, out hitInfo, maxRange, aimLayerMask))
-	// 	{
-	// 		aimTarget.position = transform.position + transform.forward*hitInfo.distance;
-	// 	}
-	// 	else
-	// 	{
-	// 		aimTarget.position = transform.position + maxRange*transform.forward;
-	// 	}
-	// }
+	public void UpdateAimTargetPoint () {
+		RaycastHit hitInfo = new RaycastHit();
+		float maxRange = 500f;
+		if(Physics.Raycast (transform.position, transform.forward, out hitInfo, maxRange, aimLayerMask))
+		{
+			playerManager.aimTarget.position = transform.position + transform.forward*hitInfo.distance;
+		}
+		else
+		{
+			playerManager.aimTarget.position = transform.position + maxRange*transform.forward;
+		}
+	}
 
 	public void UpdateFocusPoint () {
 		previousFocusPoint = focusPoint;
