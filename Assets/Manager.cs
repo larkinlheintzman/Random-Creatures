@@ -85,8 +85,17 @@ public class Manager : NetworkBehaviour
     print($"command spawning: {spawnId}");
     // GameObject limbCopy = Instantiate(limbs[spawnId].gameObject);
     Limb bit = Instantiate(limbs[spawnId], creatureGenerator.transform).GetComponent<Limb>();
-    bit.Initialize(creatureGenerator, id, spawnId);
-    NetworkServer.Spawn(limbCopy);
+    bit.Initialize(creatureGenerator, 0, spawnId);
+    // ok now drop it
+    bit.transform.parent = null;
+    bit.RedgeDollToggle(true);
+    if (bit.boneColliders.Count > 0)
+    {
+      bit.AddLimbForce(500.0f*bit.boneColliders[0].transform.forward, bit.boneColliders[0]);
+    }
+    bit.initialized = false;
+
+    NetworkServer.Spawn(bit.gameObject);
   }
 
   // non command versions
