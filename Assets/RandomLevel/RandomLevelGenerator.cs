@@ -113,7 +113,7 @@ public class RandomLevelGenerator : MonoBehaviour
             if (generationVal > generationThreshold)
             {
               blk.gameObject.SetActive(true);
-              blk.dims = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseVal, blockSizeBase.y + blockSizeScale.y*noiseVal, blockSizeBase.z + blockSizeScale.z*noiseVal);
+              // blk.dims = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseVal, blockSizeBase.y + blockSizeScale.y*noiseVal, blockSizeBase.z + blockSizeScale.z*noiseVal);
               // borked
               // blk.Initialize();
             }

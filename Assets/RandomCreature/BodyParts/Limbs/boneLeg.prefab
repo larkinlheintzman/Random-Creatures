@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8823373064945271485}
   - component: {fileID: 421276808342948719}
   - component: {fileID: 6726113653947464780}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: upperArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6057449976169387921}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: idlePos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -129,7 +129,7 @@ GameObject:
   - component: {fileID: 314125946410010948}
   - component: {fileID: 4431151737610293816}
   - component: {fileID: 7629836048535056807}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -209,8 +209,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2289196264801084478}
   - component: {fileID: 2778856436764664894}
-  - component: {fileID: 8392487173164456454}
-  m_Layer: 2
+  - component: {fileID: -1593361909564491225}
+  m_Layer: 3
   m_Name: boneLeg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -253,16 +253,16 @@ MonoBehaviour:
   stepRadius: 1.28
   limbLength: 1.29
   supportHeight: 2
-  groundOffset: 0.5
   support: 1.1064954
   supportScaler: 1
+  supportAngle: 20
+  velocityPositionScaler: 0.1
   twitchScale: 0.25
   twitchRandomScale: 0.1
   generatorNearFlag: 0
   playerNearFlag: 0
   drawRaycasts: 1
-  raycastNumber: 15
-  pointNumber: 600
+  pointNumber: 100
   layerMask:
     serializedVersion: 2
     m_Bits: 51
@@ -271,7 +271,10 @@ MonoBehaviour:
   positionSmoothTime: 0.1
   rotationSmoothSpeed: 0.01
   smoothTargetDistanceScale: 5
-  boneColliders: []
+  boneColliders:
+  - {fileID: 421276808342948719}
+  - {fileID: 2357027511340045301}
+  - {fileID: 3474614498134125339}
   initialized: 1
   id: 1
   ik: {fileID: 0}
@@ -286,7 +289,9 @@ MonoBehaviour:
   playerManager: {fileID: 0}
   traj: {fileID: 0}
   index: 0
---- !u!114 &8392487173164456454
+  sceneIndex: -1
+  stepSpeedScalar: 6
+--- !u!114 &-1593361909564491225
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -312,7 +317,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4219983329710288677}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -343,7 +348,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1776747999116061371}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: pole
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -375,7 +380,7 @@ GameObject:
   - component: {fileID: 2318215688476519749}
   - component: {fileID: 7307455106639644198}
   - component: {fileID: 877551342465187790}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -458,7 +463,7 @@ GameObject:
   - component: {fileID: 6861582567063981405}
   - component: {fileID: 2357027511340045301}
   - component: {fileID: 404743969597445208}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: lowerArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -593,7 +598,7 @@ GameObject:
   - component: {fileID: 3474614498134125339}
   - component: {fileID: 3502297649280877498}
   - component: {fileID: 4919338552724742327}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: footBone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -724,7 +729,7 @@ GameObject:
   - component: {fileID: 8889625929114839755}
   - component: {fileID: 6979901864437010225}
   - component: {fileID: 3841817044156612588}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

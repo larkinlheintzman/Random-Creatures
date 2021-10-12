@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3279341512680579919}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: upperArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6057449976169387921}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: idlePos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -74,7 +74,7 @@ GameObject:
   - component: {fileID: 4431151737610293816}
   - component: {fileID: 7629836048535056807}
   - component: {fileID: 7942598122720019716}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -168,8 +168,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2289196264801084478}
   - component: {fileID: 5526286922841880384}
-  - component: {fileID: 6446285929613801918}
-  m_Layer: 2
+  - component: {fileID: 219395204555540735}
+  m_Layer: 3
   m_Name: Arm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,8 +220,7 @@ MonoBehaviour:
   generatorNearFlag: 0
   playerNearFlag: 0
   drawRaycasts: 0
-  raycastNumber: 15
-  pointNumber: 607
+  pointNumber: 100
   layerMask:
     serializedVersion: 2
     m_Bits: 51
@@ -245,8 +244,9 @@ MonoBehaviour:
   playerManager: {fileID: 0}
   traj: {fileID: 0}
   index: 0
+  sceneIndex: -1
   repeatPeriod: 0.1
---- !u!114 &6446285929613801918
+--- !u!114 &219395204555540735
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -272,7 +272,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4219983329710288677}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -303,7 +303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1776747999116061371}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: pole
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -336,7 +336,7 @@ GameObject:
   - component: {fileID: 7307455106639644198}
   - component: {fileID: 877551342465187790}
   - component: {fileID: 5248387190907241629}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -431,7 +431,7 @@ GameObject:
   - component: {fileID: 664782429831847750}
   - component: {fileID: 917739950435793704}
   - component: {fileID: 1933884326525867007}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -510,7 +510,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3783810796142070930}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: lowerArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -546,7 +546,7 @@ GameObject:
   - component: {fileID: 6979901864437010225}
   - component: {fileID: 3841817044156612588}
   - component: {fileID: 4328264630567233099}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -15,8 +15,8 @@ public class InfoText : MonoBehaviour
   public int id;
   public Vector3 referenceVelocity = Vector3.zero;
   public float smoothTime = 0.02f;
+  public LineRenderer lineRenderer;
   private bool initalized;
-  private LineRenderer lineRenderer;
   private string[] Alphabet = new string[26] {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
   private CreatureGenerator generator;
 

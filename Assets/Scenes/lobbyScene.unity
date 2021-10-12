@@ -97,8 +97,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: b3739f24626df594489fa7295778c123, type: 2}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: c92f7811caed67f488118f1e25f4cca4, type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -2695,7 +2695,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 20, y: 158}
-  m_SizeDelta: {x: -597.9479, y: -452.7097}
+  m_SizeDelta: {x: -288.2175, y: -715.9804}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &905807388
 MonoBehaviour:
@@ -4050,7 +4050,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 18, y: -56}
-  m_SizeDelta: {x: -724.254, y: -450.4757}
+  m_SizeDelta: {x: -406.0767, y: -701.0756}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1535535257
 MonoBehaviour:
@@ -5398,6 +5398,7 @@ MonoBehaviour:
   - {fileID: 2289196264801084473, guid: ec7fd83151ff7cd4bb5fc730e963a78b, type: 3}
   inputField: {fileID: 1535535257}
   levelSceneName: SampleScene
+  sceneIndexCounter: 0
   loadingMenu: {fileID: 216006302}
 --- !u!4 &1960835156
 Transform:
@@ -5468,7 +5469,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 19, y: 43}
-  m_SizeDelta: {x: -599.178, y: -453.8425}
+  m_SizeDelta: {x: -286.22, y: -712.8894}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1971788261
 MonoBehaviour:

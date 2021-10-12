@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6057449976169387921}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: idlePos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 8062778846019908244}
   - component: {fileID: 6840109077218648888}
   - component: {fileID: 8546815788601010616}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Plates
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 314125946410010948}
   - component: {fileID: 4431151737610293816}
   - component: {fileID: 7629836048535056807}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -203,8 +203,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2289196264801084478}
   - component: {fileID: 7144654338790656893}
-  - component: {fileID: 1817431721615789522}
-  m_Layer: 2
+  - component: {fileID: 8120051608742923563}
+  m_Layer: 3
   m_Name: cuttieArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,8 +255,7 @@ MonoBehaviour:
   generatorNearFlag: 0
   playerNearFlag: 0
   drawRaycasts: 1
-  raycastNumber: 15
-  pointNumber: 600
+  pointNumber: 100
   layerMask:
     serializedVersion: 2
     m_Bits: 347
@@ -283,12 +282,13 @@ MonoBehaviour:
   playerManager: {fileID: 0}
   traj: {fileID: 0}
   index: 0
+  sceneIndex: -1
   repeatPeriod: 0.1
   impactForce: 500
   swingAngle: 1
   edgeCollider: {fileID: 6429927586813379269}
   swingParticles: {fileID: 3963988426055734876}
---- !u!114 &1817431721615789522
+--- !u!114 &8120051608742923563
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -317,7 +317,7 @@ GameObject:
   - component: {fileID: 1413613433983029868}
   - component: {fileID: 2627219421540636868}
   - component: {fileID: 8645046465757933597}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: upperArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +402,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4219983329710288677}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -433,7 +433,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1776747999116061371}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: pole
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -465,7 +465,7 @@ GameObject:
   - component: {fileID: 7511587647579472056}
   - component: {fileID: 3963988426055734876}
   - component: {fileID: 107683153859056600}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: trailParticles
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5288,7 +5288,7 @@ GameObject:
   - component: {fileID: 7116072473676734195}
   - component: {fileID: 5067117395612481816}
   - component: {fileID: 6410858495796851838}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5372,7 +5372,7 @@ GameObject:
   - component: {fileID: 5991514637691808930}
   - component: {fileID: 8166308356605064020}
   - component: {fileID: 2620401766706555723}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: lowerArm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5507,7 +5507,7 @@ GameObject:
   - component: {fileID: 6429927586813379269}
   - component: {fileID: 5453814896002429415}
   - component: {fileID: 1154371880048639605}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: footBone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5639,7 +5639,7 @@ GameObject:
   - component: {fileID: 8889625929114839755}
   - component: {fileID: 6979901864437010225}
   - component: {fileID: 3841817044156612588}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

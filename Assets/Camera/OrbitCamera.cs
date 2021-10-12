@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.PostProcessing;
+// using UnityEngine.Experimental.Rendering.HDPipeline;
 
 public class OrbitCamera : MonoBehaviour {
 
@@ -8,13 +11,16 @@ public class OrbitCamera : MonoBehaviour {
 	public RenderTexture pixelTexture;
 
 	[SerializeField]
+	public Volume ppVolume;
+
+	[SerializeField]
 	public Transform focus = default;
 
 	[SerializeField, Range(1f, 20f)]
 	public float distance = 15f;
 
-	[SerializeField, Range(1f, 20f)]
-	public float defaultDistance = 15f;
+	[SerializeField]
+	public Vector2 minMaxDistance = new Vector2(5f, 15f);
 
 	[SerializeField, Range(1f, 20f)]
 	public float inventoryDistance = 10f;
@@ -25,7 +31,7 @@ public class OrbitCamera : MonoBehaviour {
 	[SerializeField]
 	public Vector2 aimingOffset = Vector2.one;
 
-	[SerializeField, Min(0f)]
+	[SerializeField, Range(0f,100f)]
 	public float focusRadius = 3f;
 
 	[SerializeField, Range(0f, 1f)]
@@ -37,7 +43,7 @@ public class OrbitCamera : MonoBehaviour {
 	[SerializeField, Range(-89f, 89f)]
 	public float minVerticalAngle = -2f, maxVerticalAngle = 80f;
 
-	[SerializeField, Min(0f)]
+	[SerializeField, Range(0f,10f)]
 	public float alignDelay = 1f;
 
 	[SerializeField, Range(0f, 90f)]
@@ -63,7 +69,7 @@ public class OrbitCamera : MonoBehaviour {
 
 	Vector3 focusPoint, previousFocusPoint;
 
-	public Vector2 orbitAngles = new Vector2(45f, 0f);
+	public Vector2 orbitAngles = new Vector3(45f, 0f);
 
 	float lastManualRotationTime;
 
@@ -89,7 +95,7 @@ public class OrbitCamera : MonoBehaviour {
 		}
 	}
 
-	public void Initialize()
+	public void Initialize(PlayerManager manager)
 	{
 
 		// regularCamera = transform.GetChild(0).gameObject.GetComponentInChildren<Camera>();
@@ -98,22 +104,33 @@ public class OrbitCamera : MonoBehaviour {
     mouse = Mouse.current;
 		aimingRecticle.enabled = false;
 
-		playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+		// playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+		playerManager = manager;
 		initialized = true;
 	}
 
+	[Header("Random Testing Junk")]
+	public float dofScaler = 1f;
+	public float dofOffset = 0f;
+	public float zoomScaler = 1f;
 	void LateUpdate () {
 		if (rotationEnabled && initialized)
 		{
 			UpdateAimTargetPoint();
 			UpdateFocusPoint();
 			Quaternion lookRotation;
+			MassController ctrl = playerManager.gameObject.GetComponent<MassController>();
+			Quaternion testRotation;
+			if (ctrl != null)	testRotation = Quaternion.FromToRotation(Vector3.up, ctrl.localUp)*Quaternion.Euler(orbitAngles);
+			else testRotation = Quaternion.identity;
 			if (ManualRotation() || AutomaticRotation()) {
 				ConstrainAngles();
-				lookRotation = Quaternion.Euler(orbitAngles);
+				lookRotation = testRotation;
 			}
 			else {
-				lookRotation = transform.rotation;
+				// lookRotation = transform.rotation;
+				ConstrainAngles();
+				lookRotation = testRotation;
 			}
 
 			Vector3 lookDirection = lookRotation * Vector3.forward;
@@ -137,15 +154,43 @@ public class OrbitCamera : MonoBehaviour {
 			transform.SetPositionAndRotation(lookPosition, lookRotation);
 
 			HandleButtons();
+
+			//-----------------------------------------
+			// MassController ctrl = playerManager.gameObject.GetComponent<MassController>();
+			if (ctrl != null)
+			{
+				Camera cam = GetComponentInChildren<Camera>();
+				// cam.transform.rotation = Quaternion.LookRotation(transform.forward, ctrl.localUp);
+			}
+			//-----------------------------------------
+
+			// ----------------------------------------
+			// set up depth of field to track aim target
+			// VolumeProfile profile = ppVolume.sharedProfile;
+			// DepthOfField dph;
+					// if (ppVolume)
+					// {
+					// 	if (ppVolume.sharedProfile.TryGetSettings<DepthOfField>(out DepthOfField dof))
+					// 	{
+					// 		dof.focusDistance.value = dofOffset + dofScaler*Vector3.Distance(transform.position, playerManager.aimTarget.position);
+					// 		// dph.aperture.value = 30;
+					// 		// dph.focalLength.value = blur_amt;
+					// 		// dph.kernelSize.value = KernelSize.VeryLarge;
+					// 	}
+					// }
+			// ----------------------------------------
 		}
+
 	}
 
+	private float previousDistance = 0f;
 	public void HandleButtons()
 	{
 
     // do inventory if's
     if (playerManager.inputManager.inventoryOpen && !playerManager.inputManager.aiming)
     {
+			previousDistance = distance;
       distance = inventoryDistance;
 			aimingRecticle.enabled = false;
 			focusOffset = Vector3.zero;
@@ -153,17 +198,27 @@ public class OrbitCamera : MonoBehaviour {
 
 		if (!playerManager.inputManager.inventoryOpen && playerManager.inputManager.aiming)
     {
+			previousDistance = distance;
       distance = aimingDistance;
 			aimingRecticle.enabled = true;
 			focusOffset = aimingOffset.x*transform.right + aimingOffset.y*transform.up;
     }
 
-		if (!playerManager.inputManager.inventoryOpen && !playerManager.inputManager.aiming)
+		if (!playerManager.inputManager.inventoryOpen && !playerManager.inputManager.aiming && previousDistance != -1f)
     {
-      distance = defaultDistance;
+      distance = previousDistance;
 			aimingRecticle.enabled = false;
 			focusOffset = Vector3.zero;
+			previousDistance = -1f;
     }
+
+		// update distance based on scroll
+		if (playerManager.inputManager.scrollPressed)
+		{
+			distance += zoomScaler*playerManager.inputManager.scrollValue.y;
+			playerManager.inputManager.scrollPressed = false;
+		}
+		distance = Mathf.Min(Mathf.Max(distance , minMaxDistance.x), minMaxDistance.y);
 
   }
 
@@ -204,6 +259,16 @@ public class OrbitCamera : MonoBehaviour {
       -mouse.delta.y.ReadValue(),
       mouse.delta.x.ReadValue()
 		);
+				// map input by local up as well
+				// MassController ctrl = playerManager.gameObject.GetComponent<MassController>();
+				// float upAngle = Vector3.Angle(transform.up, ctrl.localUp);
+				// float xVal = mouse.delta.x.ReadValue();
+				// float yVal = mouse.delta.y.ReadValue();
+				//
+				// Vector2 input = new Vector2(
+		    //   -yVal*Mathf.Cos(upAngle) + yVal*Mathf.Sin(upAngle),
+		    //   xVal*Mathf.Cos(upAngle) + xVal*Mathf.Sin(upAngle)
+				// );
 		const float e = 0.001f;
 		if (input.x < -e || input.x > e || input.y < -e || input.y > e) {
 			orbitAngles += rotationSpeed * Time.unscaledDeltaTime * input;

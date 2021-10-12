@@ -28,8 +28,7 @@ public class Body : MonoBehaviour
   public float tiltSpeed = 0.3f;
   public float motionMass = 0.25f;
   public float motionDrag = 2.0f;
-  public ParticleSystem deathParticles;
-
+  public ParticleSystem bodyParticles; // impact particles or env interaction
 
   public void Initialize(CreatureGenerator gen)
   {
@@ -42,11 +41,6 @@ public class Body : MonoBehaviour
 
     initialized = true;
 
-  }
-
-  public CapsuleCollider GetBodyCollider()
-  {
-    return mainCollider;
   }
 
   public Transform GetLimbIdleTransform()
@@ -94,6 +88,11 @@ public class Body : MonoBehaviour
 
     // idlePositionOffset = Vector3.Lerp(idlePositionOffset, idlePositionTarget, idleMoveSpeed);
     idlePositionOffset = Vector3.SmoothDamp(idlePositionOffset, idlePositionTarget, ref idleVel, idleMoveTime);
+  }
+
+  public CapsuleCollider GetBodyCollider()
+  {
+    return mainCollider;
   }
 
 }

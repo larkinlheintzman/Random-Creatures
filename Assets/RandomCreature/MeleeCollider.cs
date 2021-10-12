@@ -33,5 +33,26 @@ public class MeleeCollider : BoneCollider
     }
   }
 
+  // // for trigger contacts
+  // public virtual void OnCollisionEnter(Collision col)
+  // {
+  //   if(initialized && hitDelayCounter == 0)
+  //   {
+  //     if(layerMask == (layerMask | 1 << col.gameObject.layer))
+  //     {
+  //       isHit = true;
+  //       hitDelayCounter = iFrames;
+  //       hitPoint = col.GetContact(0).point;
+  //       other = col.collider;
+  //
+  //       // stop swing motion on limb
+  //       if (parentLimb is SwordArm)
+  //       {
+  //         (parentLimb as SwordArm).DoHit(col);
+  //       }
+  //     }
+  //   }
+  // }
+
 
 }

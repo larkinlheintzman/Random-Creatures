@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Mirror;
+using UnityEngine.VFX;
 
 public class CreatureGenerator : MonoBehaviour
 {
@@ -27,43 +29,97 @@ public class CreatureGenerator : MonoBehaviour
   public enum LimbType {leg, arm, head}; // more to follow
   [HideInInspector]
   public Rigidbody rb;
-  public OrbitCamera orbitCam;
 
   public int[] equippedLimbIds;
-  // [HideInInspector]
   public List<Head> equippedHeads = new List<Head>();
-  // [HideInInspector]
   public List<Limb> equippedLimbs = new List<Limb>();
-  // [HideInInspector]
   public List<Limb> nearbyLimbs = new List<Limb>();
-  // [HideInInspector]
+  [HideInInspector]
+  public OrbitCamera orbitCam;
+  [HideInInspector]
   public Limb targetedLimb; // for picking up limbs
   [HideInInspector]
   public Body equippedBody;
   [HideInInspector]
-  // [HideInInspector]
   public MassController ctrl; // actual motion controller
+  [HideInInspector]
   public Health health;
-
+  [HideInInspector]
+  public Energy energy;
+  [HideInInspector]
   public Manager playerManager;
 
-  private GameObject idleLimbObj;
+  private GameObject limbObj;
   private Vector3[] textOffsets;
   private RectTransform[] textTransforms;
   private Text[] limbTexts;
   private List<BoneCollider> limbColliders = new List<BoneCollider>();
   private CapsuleCollider bodyCollider;
 
+  // public int[] RandomizeCreature()
+  // {
+  //   // do initial set up
+  //   health = gameObject.AddComponent<Health>();
+  //   health.Initialize(this, healthBar);
+  //
+  //   if (isPlayer)
+  //   {
+  //     orbitCam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
+  //     playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+  //   }
+  //   else
+  //   {
+  //     // do equivalant enemy manager! has particles/inputs/ so on
+  //     playerManager = gameObject.GetComponent<EnemyManager>();
+  //   }
+  //
+  //
+  //   // build from scratch
+  //   equippedBody = AddBody(transform);
+  //   GetAttachPoints(equippedBody);
+  //   ConfigurePhysics(equippedBody);
+  //
+  //   // if (isPlayer) {
+  //   // } else {
+  //   //   ConfigureEnemyPhysics(equippedBody);
+  //   // }
+  //
+  //   // select limb indexes from pool
+  //   int[] tempLimbIds = new int[currentAttachPoints.Count];
+  //   equippedLimbIds = new int[currentAttachPoints.Count];
+  //   for (int i = 0; i < currentAttachPoints.Count; i++) {
+  //     tempLimbIds[i] = Random.Range(0, limbs.Length);
+  //     print($"new limb id rolled: {tempLimbIds[i]}");
+  //   }
+  //   equippedLimbIds = tempLimbIds;
+  //   SetLimbIds(equippedLimbIds);
+  //   playerManager.refreshLimbs = true;
+  //
+  //   GetLimbColliders(); // get independent bone colliders
+  //   built = true;
+  //   return equippedLimbIds;
+  // }
+
   public int[] RandomizeCreature()
   {
+    // build from ids but w random ids
+    int[] tempLimbIds = new int[currentAttachPoints.Count];
+    // equippedLimbIds = new int[currentAttachPoints.Count];
+    for (int i = 0; i < currentAttachPoints.Count; i++) {
+      tempLimbIds[i] = Random.Range(0, limbs.Length);
+      // print($"new limb id rolled: {tempLimbIds[i]}");
+    }
+    return BuildFromIds(tempLimbIds);
+  }
+
+  public int[] BuildFromIds(int[] limbIds)
+  {
     // do initial set up
-    health = gameObject.AddComponent<Health>();
-    health.Initialize(this);
 
     if (isPlayer)
     {
       orbitCam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
-      playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
+      playerManager = gameObject.GetComponent<PlayerManager>();
     }
     else
     {
@@ -71,25 +127,18 @@ public class CreatureGenerator : MonoBehaviour
       playerManager = gameObject.GetComponent<EnemyManager>();
     }
 
+    health = gameObject.AddComponent<Health>();
+    health.Initialize(this, (playerManager as PlayerManager).healthBar);
+
+    energy = gameObject.AddComponent<Energy>();
+    energy.Initialize(this, (playerManager as PlayerManager).energyBar);
 
     // build from scratch
     equippedBody = AddBody(transform);
     GetAttachPoints(equippedBody);
+    ConfigurePhysics(equippedBody);
 
-    if (isPlayer) {
-      ConfigurePlayerPhysics(equippedBody);
-    } else {
-      ConfigureEnemyPhysics(equippedBody);
-    }
-
-    // select limb indexes from pool
-    int[] tempLimbIds = new int[currentAttachPoints.Count];
-    equippedLimbIds = new int[currentAttachPoints.Count];
-    for (int i = 0; i < currentAttachPoints.Count; i++) {
-      tempLimbIds[i] = Random.Range(0, limbs.Length);
-      print($"new limb id rolled: {tempLimbIds[i]}");
-    }
-    equippedLimbIds = tempLimbIds;
+    equippedLimbIds = limbIds;
     SetLimbIds(equippedLimbIds);
     playerManager.refreshLimbs = true;
 
@@ -130,30 +179,6 @@ public class CreatureGenerator : MonoBehaviour
       }
     }
     equippedLimbIds = newIds;
-  }
-
-  public int[] GetLimbIds()
-  {
-    return equippedLimbIds;
-    // // gets limbs[] indexs of each equippedLimb
-    // int[] returnIds = new int[equippedLimbs.Count];
-    // int counter = 0;
-    // foreach(Limb lb in equippedLimbs)
-    // {
-    //   // returnIds[counter] = limbs.IndexOf(lb);
-    //   int limbsIndex = 0;
-    //   for (int i = 0; i<limbs.Length; i++)
-    //   {
-    //     if (limbs[i] == lb)
-    //     {
-    //       returnIds[counter] = limbsIndex;
-    //       break;
-    //     }
-    //   }
-    //   // returnIds[counter] = limbsIndex;
-    //   counter += 1;
-    // }
-    // return returnIds;
   }
 
   public void GetLimbColliders()
@@ -241,24 +266,16 @@ public class CreatureGenerator : MonoBehaviour
   public void PickUpLimb(AttachPoint pt, Limb limbToPickUp, int id)
   {
     Limb[] ptLimbs = pt.GetLimbTypes(); // TODO make picking up limbs subject to point contraints
-
-    limbToPickUp.id = id;
-    limbToPickUp.RedgeDollToggle(false);
-    limbToPickUp.initialized = true;
-    limbToPickUp.transform.parent = pt.transform;
-    equippedLimbs.Add(limbToPickUp);
     if (nearbyLimbs.Contains(limbToPickUp)) nearbyLimbs.Remove(limbToPickUp);
-
-    // set pos and rotation back
-    limbToPickUp.transform.localScale = Vector3.one;
-    limbToPickUp.transform.localPosition = Vector3.zero;
-    limbToPickUp.transform.localEulerAngles = Vector3.zero;
 
     // track limb ids
     equippedLimbIds[id] = limbToPickUp.index;
-    playerManager.refreshLimbs = true;
-    // delete DAMGER
-    // playerManager.DeleteLimb(limbToPickUp.gameObject);
+    // do client call yaself
+    SetLimbIds(equippedLimbIds);
+    playerManager.CmdSyncLimbs(equippedLimbIds);
+    playerManager.CmdDeleteLimb(limbToPickUp.sceneIndex);
+    // delete picked up limb locally
+    limbToPickUp.Uninstall();
   }
 
   public void RemoveLimb(int limbIdToRemove)
@@ -277,19 +294,29 @@ public class CreatureGenerator : MonoBehaviour
           lb.AddLimbForce(500.0f*lb.boneColliders[0].transform.forward, lb.boneColliders[0]);
         }
         lb.initialized = false;
+
         limbRemovedFlag = true;
         newLimbList.Remove(lb);
         // spawn on network
         // playerManager.netManager.spawnPrefabs.Add(lb.gameObject);
-        playerManager.SpawnLimb(lb.index);
+        playerManager.CmdSpawnLimb(lb.index);
+
+        // assign scene index if not
+        lb.sceneIndex = playerManager.sceneIndexCounter;
+        equippedLimbIds[limbIdToRemove] = -1;
+        playerManager.refreshLimbs = true;
+
+        if (playerManager.isClientOnly)
+        {
+          // remove limb from worl
+          lb.Uninstall();
+        }
       }
     }
 
     if (limbRemovedFlag)
     {
       equippedLimbs = newLimbList;
-      equippedLimbIds[limbIdToRemove] = -1;
-      playerManager.refreshLimbs = true;
       // also call for sync operation
       // playerManager.SendLimbIds(GetLimbIds());
     }
@@ -336,13 +363,14 @@ public class CreatureGenerator : MonoBehaviour
     return -1;
   }
 
-  public void ConfigurePlayerPhysics(Body bod)
+  public void ConfigurePhysics(Body bod)
   {
     // add rigidbody to CREATURE object
     rb = gameObject.AddComponent<Rigidbody>();
     rb.mass = bod.motionMass;
     rb.drag = bod.motionDrag;
-    rb.useGravity = true;
+    rb.useGravity = false;
+    rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
     // add physics controller to creature
     ctrl = gameObject.AddComponent<MassController>();
@@ -357,52 +385,21 @@ public class CreatureGenerator : MonoBehaviour
     newCollider.height = bodyCollider.height;
     newCollider.material = bodyCollider.material;
     newCollider.direction = bodyCollider.direction;
-    bodyCollider.isTrigger = true;
+    bodyCollider.enabled = false;
 
     // make limb attach points track generator
-    idleLimbObj = bod.GetLimbIdleTransform().gameObject;
-    idleLimbObj.transform.SetParent(transform);
-    idleLimbObj.transform.position = transform.position;
-    idleLimbObj.transform.rotation = transform.rotation;
+    limbObj = bod.GetLimbIdleTransform().gameObject;
+    limbObj.transform.SetParent(transform);
+    limbObj.transform.position = transform.position;
+    limbObj.transform.rotation = transform.rotation;
 
-    //make camera follow body instead of creature?
-    OrbitCamera cam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
-    cam.focus = bod.bodyPart;
+    if (isPlayer)
+    {
+      //make camera follow body instead of creature?
+      OrbitCamera cam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
+      cam.focus = bod.bodyPart;
+    }
 
-  }
-
-  public void ConfigureEnemyPhysics(Body bod)
-  {
-    // add rigidbody to CREATURE object
-    rb = gameObject.AddComponent<Rigidbody>();
-    rb.mass = bod.motionMass;
-    rb.drag = bod.motionDrag;
-    rb.useGravity = true;
-
-    // add physics controller to creature
-    ctrl = gameObject.AddComponent<MassController>();
-    ctrl.Initialize(this, rb);
-
-    // add body's collider
-    bodyCollider = bod.GetBodyCollider();
-    CapsuleCollider newCollider = gameObject.AddComponent<CapsuleCollider>();
-
-    newCollider.center = bodyCollider.center;
-    newCollider.radius = bodyCollider.radius;
-    newCollider.height = bodyCollider.height;
-    newCollider.material = bodyCollider.material;
-    newCollider.direction = bodyCollider.direction;
-    bodyCollider.isTrigger = true;
-
-    // make limb attach points track generator
-    idleLimbObj = bod.GetLimbIdleTransform().gameObject;
-    idleLimbObj.transform.SetParent(transform);
-    idleLimbObj.transform.position = transform.position;
-    idleLimbObj.transform.rotation = transform.rotation;
-
-    // //make camera follow body instead of creature?
-    // OrbitCamera cam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
-    // cam.focus = bod.bodyPart;
   }
 
   public void GetAttachPoints(Body bod)
@@ -418,7 +415,7 @@ public class CreatureGenerator : MonoBehaviour
 
   }
 
-  public bool CheckStepping(int id)
+  public bool CheckStepping()
   {
     foreach(Limb lb in equippedLimbs)
     {
@@ -428,6 +425,45 @@ public class CreatureGenerator : MonoBehaviour
       }
     }
     return false;
+  }
+
+  public int grappleCallCounter = 0;
+  public int GrappleTurnAlternator()
+  {
+    // grappleCallCounter++;
+    // must be betta. like click once to attach arm, click again to establish another arm, keep clicking to release from arm least recently attached... ya feel
+
+    int maximumId = -1;
+    int oldestGrappleId = -1;
+    float carbonDate = Mathf.Infinity;
+    foreach(Limb lb in equippedLimbs)
+    {
+      if (lb is GrappleArm)
+      {
+        GrappleArm lbGrapple = lb as GrappleArm;
+        // if ANY grappler is not on cool down we dont go
+        if (lbGrapple.shotOnCooldown) return -1;
+        if (lbGrapple.grappledAt < carbonDate)
+        {
+          carbonDate = lbGrapple.grappledAt;
+          oldestGrappleId = lb.id;
+        }
+        // if yaint grappled
+        if (lbGrapple.grappledAt <= -1.0f)
+        {
+          if (lbGrapple.id > maximumId)
+          {
+            maximumId = lbGrapple.id;
+          }
+        }
+      }
+    }
+    if (maximumId == -1)
+    {
+      // no limb not grappled
+      return oldestGrappleId;
+    }
+    return maximumId;
   }
 
   public bool CheckPunching()
@@ -482,20 +518,34 @@ public class CreatureGenerator : MonoBehaviour
     // update body attach points
     isGrounded = false;
     limbSupport = 0.0f;
+    float totalConsumption = 0.0f;
     for (int i=0; i < equippedLimbs.Count; i++)
     {
       // equippedLimbs
       equippedLimbs[i].transform.GetChild(0).transform.position = equippedBody.transform.position + equippedBody.transform.TransformVector(attachPointOffsets[equippedLimbs[i].id]);
       limbSupport += equippedLimbs[i].support;
+
+      // check if equippedLimbIds still match
+      if (equippedLimbIds[i] != equippedLimbs[i].index)
+      {
+        // equippedLimbIds[i] = equippedLimbs[i].indexs
+        playerManager.refreshLimbs = true;
+      }
+
+      // update energy consumption per limb
+      totalConsumption += equippedLimbs[i].energyConsumption;
+
     }
+    // subtract consumption this frame from the total energy
+    energy.Consume(totalConsumption);
 
     if (limbSupport != 0.0f)
     {
       isGrounded = true; // if at least one limb is touching the ground then we're 'supported'
     }
     // match limb idle targets to generator
-    idleLimbObj.transform.position = equippedBody.transform.position - equippedBody.idlePositionOffset;
-    idleLimbObj.transform.rotation = equippedBody.transform.rotation;
+    limbObj.transform.position = equippedBody.transform.position - equippedBody.idlePositionOffset;
+    limbObj.transform.rotation = equippedBody.transform.rotation;
 
     foreach(BoneCollider bc in limbColliders)
     {
@@ -609,36 +659,103 @@ public class CreatureGenerator : MonoBehaviour
     }
   }
 
-  public Vector3 MapToInputSpace(Vector3 worldInput)
-  {
-    Vector3 desiredVelocity;
-    if (cameraTransform) {
-      Vector3 forward = cameraTransform.forward;
-      forward.y = 0f;
-      forward.Normalize();
-      Vector3 right = cameraTransform.right;
-      right.y = 0f;
-      right.Normalize();
-      desiredVelocity = (forward * worldInput.z + right * worldInput.x);
-    }
-    else
-    {
-      desiredVelocity = worldInput;
-    }
-    // Debug.Log("desired velocity mapped: " + desiredVelocity);
-    return desiredVelocity;
-  }
-
   public void Die(bool particlesFlag = true)
   {
-    if (particlesFlag && playerManager != null) playerManager.particleContainer.PlayParticle(4, transform.position);
-    // make limbs remove themselves too
+    // move back to origin and respawn
+    // instead of origin, we should be rolling back to last safe position
+    // also drop all interactions, grappled, grabs yada
+    playerManager.inputManager.shootPressed = false;
+
+    health.currentHealth = 10f;
+
     foreach(Limb lb in equippedLimbs)
     {
-      lb.Uninstall();
+      if (lb is GrappleArm)
+      {
+        (lb as GrappleArm).Release();
+      }
     }
-    gameObject.SetActive(false);
-    // to be respawned later
+    transform.position = Vector3.zero;
+    rb.velocity = Vector3.zero; // respawn at zero speed pls
+
+
+    StartCoroutine(Respawn());
+  }
+
+  // likely this should be in the player manager..
+  public IEnumerator Respawn()
+  {
+
+    float blinkDuration = 1f;
+    bool blinkToggle = false;
+    float blinkStart = Time.time;
+
+    while(Time.time < blinkStart + blinkDuration)
+    {
+      // blunk
+      if (blinkToggle)
+      {
+        equippedBody.gameObject.SetActive(true);
+        limbObj.gameObject.SetActive(true);
+        blinkToggle = false;
+      }
+      else
+      {
+        equippedBody.gameObject.SetActive(false);
+        limbObj.gameObject.SetActive(false);
+        blinkToggle = true;
+      }
+      yield return null;
+    }
+    equippedBody.gameObject.SetActive(true);
+    limbObj.gameObject.SetActive(true);
+    foreach(Limb lb in equippedLimbs)
+    {
+      lb.traj.done = true; //
+    }
+  }
+
+  public VisualEffect bodyParticles;
+  public float impactSizeScaler = 1f;
+  public float impactDamageScaler = 1f;
+  void OnCollisionEnter(Collision collision)
+  {
+    // play particles w params based on impact speed and position
+    if(layerMask == (layerMask | 1 << collision.gameObject.layer))
+    {
+      if (bodyParticles.HasFloat("impactSize"))
+      {
+        bodyParticles.SetFloat("impactSize", collision.impulse.magnitude*impactSizeScaler);
+      }
+      bodyParticles.Play();
+      bodyParticles.gameObject.transform.position = collision.GetContact(0).point;
+
+      // take damage
+      if (health != null)
+      {
+        health.Damage(collision.impulse.magnitude*impactDamageScaler);
+      }
+    }
+  }
+
+  public void OnCollisionStay(Collision collision)
+  {
+    // play particles w params based on impact speed and position
+    if(layerMask == (layerMask | 1 << collision.gameObject.layer))
+    {
+      // activate goosh for duration of particles and while moving
+      bodyParticles.gameObject.transform.position = collision.GetContact(0).point;
+    }
+  }
+
+  public void OnCollisionExit(Collision other)
+  {
+    // play particles w params based on impact speed and position
+    if(layerMask == (layerMask | 1 << other.gameObject.layer))
+    {
+      bodyParticles.Stop();
+      bodyParticles.gameObject.transform.localPosition = Vector3.zero;
+    }
   }
 
 }

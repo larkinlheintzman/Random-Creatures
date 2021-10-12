@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4673562100850790063}
   - component: {fileID: 1414382985638616079}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: armSpot (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -61,7 +61,7 @@ GameObject:
   - component: {fileID: 8028461892211584073}
   - component: {fileID: 7606660814992233054}
   - component: {fileID: 6811011016062752460}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -153,15 +153,15 @@ Cloth:
   m_StretchingStiffness: 1
   m_BendingStiffness: 0.2
   m_UseTethers: 0
-  m_UseGravity: 1
-  m_Damping: 0.1
+  m_UseGravity: 0
+  m_Damping: 0.31
   m_ExternalAcceleration: {x: 0, y: 0, z: -3}
   m_RandomAcceleration: {x: 5, y: 0, z: -9}
   m_WorldVelocityScale: 0.5
-  m_WorldAccelerationScale: 1
+  m_WorldAccelerationScale: 0.5
   m_Friction: 0.2
   m_CollisionMassScale: 0.1
-  m_UseContinuousCollision: 1
+  m_UseContinuousCollision: 0
   m_UseVirtualParticles: 0
   m_SolverFrequency: 120
   m_SleepThreshold: 0.1
@@ -429,7 +429,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2705074363762447578}
   - component: {fileID: 223545880499314933}
-  m_Layer: 2
+  - component: {fileID: 4793212051924197059}
+  m_Layer: 3
   m_Name: collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -460,10 +461,22 @@ CapsuleCollider:
   m_Material: {fileID: 13400000, guid: f5757db8c59e6a240819ae9dda8929e1, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.3
-  m_Height: 1.2002454
+  m_Radius: 0.35
+  m_Height: 1.31
   m_Direction: 1
-  m_Center: {x: 0, y: -0.003907442, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4793212051924197059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3310129801364211006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07eeec3966a4af34485188aa63432fb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3435439064521575817
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,7 +486,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8196365600555193705}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: LimbObj
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -504,7 +517,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1800080543011368370}
   - component: {fileID: 3616437825074649541}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: armSpot (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -552,7 +565,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5204208633117041289}
   - component: {fileID: 6322783378728537574}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: beanBod
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -602,9 +615,9 @@ MonoBehaviour:
   nervousness: 0.015
   positionSmoothTime: 0.023
   tiltSpeed: 0.037
-  motionMass: 0.25
-  motionDrag: 2
-  deathParticles: {fileID: 2744712733975126944, guid: 40da6d211f2e2884cadeacf615f91181, type: 3}
+  motionMass: 1
+  motionDrag: 1
+  bodyParticles: {fileID: 0}
   idleMoveTime: 0.1
 --- !u!1 &5204208633318468116
 GameObject:
@@ -616,7 +629,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5204208633318468117}
   - component: {fileID: 5204208633318468118}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: armSpot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -664,7 +677,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7694568305173506112}
   - component: {fileID: 9111929259924667182}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: armSpot (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -714,7 +727,7 @@ GameObject:
   - component: {fileID: 659546695017642692}
   - component: {fileID: 2391652610711163311}
   - component: {fileID: 30059999018918054}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bod
   m_TagString: Untagged
   m_Icon: {fileID: 0}

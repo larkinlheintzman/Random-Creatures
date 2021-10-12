@@ -12,6 +12,7 @@ public class Limb : MonoBehaviour
     public Quaternion worldRotation;
     public bool isGrounded;
     public Vector3 groundNormal;
+    public float support;
   }
 
   [Header("Limb Motion")]
@@ -23,20 +24,13 @@ public class Limb : MonoBehaviour
   public float stepRadius;
   public float limbLength;
   public float supportHeight;
-  public float groundOffset;
   public float support = 1.0f;
   public float supportScaler = 1;
+  public float supportAngle = 20f; // the maximum angle difference between player up and ground normal a limb will provide support at
+  public float velocityPositionScaler = 0.2f; // amount that velocity influences limb position
   public float twitchScale = 0.25f;
   public float twitchRandomScale = 0.1f;
-
-  [Header("Debug Fields")]
-
-  public bool generatorNearFlag = false;
-  public bool playerNearFlag = false;
-  // public bool outlineEnabled = false;
-  public bool drawRaycasts = false;
-  public int raycastNumber = 15;
-  public int pointNumber = 600;
+  public int pointNumber = 100;
   public LayerMask layerMask; // interaction layer mask
   [Range(0,1)]
   public float nervousness = 0.05f;
@@ -44,15 +38,24 @@ public class Limb : MonoBehaviour
   public float positionSmoothTime = 0.01f;
   public float rotationSmoothSpeed = 0.01f;
   public float smoothTargetDistanceScale = 5f;
+  public float energyConsumption = 0.0f;
+  public float supportEnergyScaler = 0.01f;
   public List<BoneCollider> boneColliders;
 
+
+  [Header("Debug Fields")]
+
+  public bool generatorNearFlag = false;
+  public bool playerNearFlag = false;
+  public bool drawRaycasts = false;
   public bool initialized = false;
   public int id;
-  public FastIKFabric ik;
+  public int sceneIndex = -1; // limbs index in the scene, unique synched over net
 
   [Header("Damage Params")]
   public float damage;
 
+  // hidden parameters
   [HideInInspector]
   public Transform target;
   [HideInInspector]
@@ -76,20 +79,12 @@ public class Limb : MonoBehaviour
   [HideInInspector]
   public int index; // limbs index in the generator limb list
 
+  private FastIKFabric ik;
   private Vector3 smoothRefVelocity = Vector3.zero;
   private CreatureGenerator[] creatureGenerators; // all creature creatureGenerators in scene
   private Vector3 currentDirectionalInput = Vector3.zero;
   private CharacterInputs inputs;
   private GameObject textObject;
-
-  // private Outline outliner;
-
-  public void Awake()
-  {
-    creatureGenerators = FindObjectsOfType<CreatureGenerator>(); // get all gens in scene
-
-
-  }
 
   public virtual void Initialize(CreatureGenerator gen, int id, int limbIndex)
   {
@@ -156,20 +151,22 @@ public class Limb : MonoBehaviour
   public virtual void UpdateSupport()
   {
 
-    RaycastHit hit = new RaycastHit();
-    // var lastframe = supportCurve[ supportCurve.length - 1 ];
-    if (Physics.Raycast(transform.position, Vector3.down, out hit, supportHeight, layerMask))
+    // inefficient but conservative
+    if (supportScaler > 0f)
     {
-      support = supportScaler*(supportHeight - hit.distance);
+      // also saves the new position for kicks
+      pos = FindGround();
+      support = pos.support;
+      generator.energy.Consume(support*supportEnergyScaler);
     }
     else
     {
-      support = 0.0f;
+      support = 0f;
     }
 
   }
 
-  public void Uninstall()
+  public virtual void Uninstall()
   {
     if (textObject != null) Destroy(textObject);
     if (infoText.target.gameObject != null) Destroy(infoText.target.gameObject);
@@ -207,10 +204,10 @@ public class Limb : MonoBehaviour
 
   public virtual Vector3 AirPosition()
   {
-    Vector3 vel = transform.position + previousPosition;
-    Vector3 horizontalSpeed = new Vector3(vel.x, 0.0f, vel.z);
+    // Vector3 vel = transform.position + previousPosition;
+    // Vector3 horizontalSpeed = new Vector3(vel.x, 0.0f, vel.z);
     // going up so tilt towards velocity vec
-    return idleTarget.position - 0.1f*horizontalSpeed;
+    return idleTarget.position;
   }
 
   public virtual void FrameUpdate()
@@ -253,7 +250,7 @@ public class Limb : MonoBehaviour
       smoothTarget.position = newPosition;
       // match bones rotation smoothly too
       smoothTarget.rotation = Quaternion.Lerp(smoothTarget.rotation, target.rotation, rotationSmoothSpeed);
-      bone.rotation = smoothTarget.rotation;
+      // bone.rotation = smoothTarget.rotation;
 
       previousPosition = smoothTarget.position;
     }
@@ -274,7 +271,6 @@ public class Limb : MonoBehaviour
             playerNearFlag = true;
           }
           infoText.TextEnable(true);
-
         }
         else
         {
@@ -287,41 +283,25 @@ public class Limb : MonoBehaviour
 
   public virtual void Twitch(Vector3 twitchDir, float twitchMagnitude, float randomScale)
   {
-
     // jerk target a random amount
-    // float randAngle = 2.0f*Mathf.PI*Random.value;
     float xRand = 2.0f*Random.value - 1.0f;
     float yRand = 2.0f*Random.value - 1.0f;
-    // Debug.Log(xRand);
-    // Debug.Log(yRand);
     Vector3 leftOfTwitch = Vector3.Cross(twitchDir, Vector3.up).normalized;
     Vector3 downOfTwitch = Vector3.Cross(twitchDir, Vector3.left).normalized;
 
     target.position += twitchDir*twitchMagnitude + xRand*randomScale*leftOfTwitch + yRand*randomScale*downOfTwitch;
-
   }
 
   public virtual bool LimbGrounded()
   {
-    // checks if target on ground
-    int pointNumber = 30;
-    Vector3[] spherePts = PointsOnSphere(pointNumber);
-
-    Vector3 currentGroundPosition = Vector3.zero;
-    // float currentMinDistance = 100f; // will only become a problem when legs > 100f in length
-
-    foreach (Vector3 value in spherePts) // only evaluate a few downward facing ones
+    // checks if bone's collider is overlapping w something
+    Collider col = bone.gameObject.GetComponent<Collider>();
+    Collider[] overlappedCols = Physics.OverlapBox(col.bounds.center, col.bounds.extents, bone.rotation, generator.layerMask);
+    if (overlappedCols.Length > 0)
     {
-      // if (drawRaycasts) Debug.DrawLine(bone.position, bone.position + limbLength*value, Color.green,0.1f);
-      if (Vector3.Dot(value, transform.forward) >= 0.0f)
-      {
-        // if (drawRaycasts) Debug.DrawLine(transform.position, transform.position + groundOffset*value + 0.05f*Vector3.right, Color.blue,0.1f);
-        RaycastHit hitPoint = new RaycastHit(); // efficiency bro
-        if (Physics.Raycast(bone.position, value, out hitPoint, groundOffset, layerMask))
-        {
-          return true;
-        }
-      }
+      // bone in current position is hitting something
+      // print("overlap method ground detection");
+      return true;
     }
     return false;
   }
@@ -357,6 +337,58 @@ public class Limb : MonoBehaviour
     }
     Vector3[] pts = upts.ToArray();
     return pts;
+  }
+
+  public virtual LimbPosition FindGround()
+  {
+    LimbPosition outputPosition = new LimbPosition();
+    Vector3 groundNormal = player.up;
+
+    // -----------------------------
+    bool groundFlag = false;
+    Vector3[] spherePts = PointsOnSphere(pointNumber);
+
+    // also add some bias to center of raycast ball, that way we can account for body speed in preferred locations
+    Vector3 bias = generator.ctrl.previousVelocity*velocityPositionScaler;
+
+    Vector3 currentGroundPosition = Vector3.zero;
+    float currentMinDistance = Mathf.Infinity;
+
+    // this might be directional
+    foreach (Vector3 pointOnSphere in spherePts) // only all of em
+    {
+      if (drawRaycasts) Debug.DrawLine(transform.position + bias, transform.position + bias + limbLength*pointOnSphere, Color.green,Time.deltaTime);
+      RaycastHit hitPoint = new RaycastHit(); // efficiency bro
+      if (Physics.Raycast(transform.position + bias, pointOnSphere, out hitPoint, limbLength, layerMask))
+      {
+        if (drawRaycasts) Debug.DrawLine(transform.position + bias, transform.position + bias + pointOnSphere*hitPoint.distance - 0.05f*Vector3.right, Color.white,Time.deltaTime);
+        if (hitPoint.distance < currentMinDistance && Vector3.Angle(player.up, -pointOnSphere) < supportAngle)
+        {
+          groundFlag = true; // found ground
+          currentGroundPosition = transform.position + bias + pointOnSphere*hitPoint.distance;
+          groundNormal = hitPoint.normal.normalized; // average normals
+          currentMinDistance = hitPoint.distance;
+        }
+      }
+    }
+    // -----------------------------
+    // and we breath
+    if (groundFlag && (currentGroundPosition - transform.position).sqrMagnitude < limbLength*limbLength && generator.energy.hasGas)
+    {
+      // print($"found position that is grounded {currentMinDistance} units away");// found ground
+      outputPosition.worldPosition = currentGroundPosition;
+      outputPosition.isGrounded = true;
+      outputPosition.groundNormal = groundNormal;
+      outputPosition.support = supportScaler*(supportHeight - currentMinDistance);
+      return outputPosition;
+    }
+    // print("found position that is NOT grounded");
+    outputPosition.worldPosition = AirPosition();
+    outputPosition.isGrounded = false;
+    outputPosition.groundNormal = groundNormal; // no normal in air!
+    outputPosition.support = 0; // no support neither
+
+    return outputPosition;
   }
 
 

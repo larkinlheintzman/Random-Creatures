@@ -148,6 +148,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Zoom",
+                    "type": "Value",
+                    "id": "a8b2b631-ee6b-45c9-8322-54a2b1c284b0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -412,6 +420,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Slide",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c53468ac-3dd8-4941-8c27-3a7fcf0d9a77",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Zoom",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

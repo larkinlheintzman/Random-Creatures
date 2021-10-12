@@ -29,35 +29,33 @@ public class SwordArm : Limb
     {
 
       // work out swing direction
-      Vector3 swingDir = generator.transform.rotation*Vector3.forward - previousRotation*Vector3.forward;
+      Vector3 swingDir = player.rotation*Vector3.forward - previousRotation*Vector3.forward;
 
       if (Vector3.Magnitude(swingDir) <= 0.001)
       {
         // not rotating, pick dir
-        if(Random.value > 0.5f) swingDir = generator.transform.right;
-        else swingDir = -generator.transform.right;
+        if(Random.value > 0.5f) swingDir = player.right;
+        else swingDir = -player.right;
       }
       swingDir = Vector3.Normalize(swingDir);
 
       if (playerManager.inputManager.punchPressed && !inMotion && Time.time > motionEndTime + repeatPeriod)
       {
 
-        Debug.DrawLine(generator.transform.position + generator.transform.rotation*Vector3.forward, generator.transform.position + generator.transform.rotation*Vector3.forward + swingDir, Color.blue, 2.0f);
+        Debug.DrawLine(player.position + player.rotation*Vector3.forward, player.position + player.rotation*Vector3.forward + swingDir, Color.blue, 2.0f);
 
         Vector3 starting = new Vector3(limbLength*Mathf.Sin(swingAngle), 0.0f, limbLength*Mathf.Cos(swingAngle));
         Vector3 final = new Vector3(limbLength*Mathf.Sin(-swingAngle), 0.0f, limbLength*Mathf.Cos(-swingAngle));
 
-
         // FUCK quaternions
-        // Quaternion swingRotation = Quaternion.LookRotation(generator.transform.forward, Vector3.Cross(swingDir, generator.transform.forward));
-        Quaternion swingRotation = Quaternion.LookRotation(Vector3.forward, Vector3.Cross(swingDir, generator.transform.forward));
+        Quaternion swingRotation = Quaternion.LookRotation(Vector3.forward, Vector3.Cross(swingDir, player.forward));
         starting = swingRotation*starting;
         final = swingRotation*final;
 
-        Debug.DrawLine(generator.transform.position, generator.transform.position + final, Color.red, 2.0f);
-        Debug.DrawLine(generator.transform.position, generator.transform.position + starting, Color.green, 2.0f);
+        Debug.DrawLine(player.position, player.position + final, Color.red, 2.0f);
+        Debug.DrawLine(player.position, player.position + starting, Color.green, 2.0f);
 
-        traj.NewTraj(starting, final, target, generator.transform, new TrajParams());
+        traj.NewTraj(starting, final, target, player, new TrajParams());
 
         inMotion = true;
         // play swoosh particles
@@ -86,7 +84,7 @@ public class SwordArm : Limb
           motionEndTime = Time.time;
         }
       }
-      previousRotation = generator.transform.rotation;
+      previousRotation = player.rotation;
     }
   }
 

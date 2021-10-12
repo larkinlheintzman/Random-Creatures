@@ -161,6 +161,14 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Zoom"",
+                    ""type"": ""Value"",
+                    ""id"": ""a8b2b631-ee6b-45c9-8322-54a2b1c284b0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -427,6 +435,17 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
                     ""action"": ""Slide"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c53468ac-3dd8-4941-8c27-3a7fcf0d9a77"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Zoom"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -453,6 +472,7 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
         m_controls_InventoryButton2 = m_controls.FindAction("InventoryButton2", throwIfNotFound: true);
         m_controls_InventoryButton3 = m_controls.FindAction("InventoryButton3", throwIfNotFound: true);
         m_controls_InventoryButton4 = m_controls.FindAction("InventoryButton4", throwIfNotFound: true);
+        m_controls_Zoom = m_controls.FindAction("Zoom", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -520,6 +540,7 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
     private readonly InputAction m_controls_InventoryButton2;
     private readonly InputAction m_controls_InventoryButton3;
     private readonly InputAction m_controls_InventoryButton4;
+    private readonly InputAction m_controls_Zoom;
     public struct ControlsActions
     {
         private @CharacterInputs m_Wrapper;
@@ -542,6 +563,7 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
         public InputAction @InventoryButton2 => m_Wrapper.m_controls_InventoryButton2;
         public InputAction @InventoryButton3 => m_Wrapper.m_controls_InventoryButton3;
         public InputAction @InventoryButton4 => m_Wrapper.m_controls_InventoryButton4;
+        public InputAction @Zoom => m_Wrapper.m_controls_Zoom;
         public InputActionMap Get() { return m_Wrapper.m_controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -605,6 +627,9 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
                 @InventoryButton4.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventoryButton4;
                 @InventoryButton4.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventoryButton4;
                 @InventoryButton4.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventoryButton4;
+                @Zoom.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnZoom;
+                @Zoom.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnZoom;
+                @Zoom.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnZoom;
             }
             m_Wrapper.m_ControlsActionsCallbackInterface = instance;
             if (instance != null)
@@ -663,6 +688,9 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
                 @InventoryButton4.started += instance.OnInventoryButton4;
                 @InventoryButton4.performed += instance.OnInventoryButton4;
                 @InventoryButton4.canceled += instance.OnInventoryButton4;
+                @Zoom.started += instance.OnZoom;
+                @Zoom.performed += instance.OnZoom;
+                @Zoom.canceled += instance.OnZoom;
             }
         }
     }
@@ -687,5 +715,6 @@ public class @CharacterInputs : IInputActionCollection, IDisposable
         void OnInventoryButton2(InputAction.CallbackContext context);
         void OnInventoryButton3(InputAction.CallbackContext context);
         void OnInventoryButton4(InputAction.CallbackContext context);
+        void OnZoom(InputAction.CallbackContext context);
     }
 }

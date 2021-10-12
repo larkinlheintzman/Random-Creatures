@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dcb459203a2f634f849977e6228b4e1, type: 3}
   m_Name: testShapeSettings
   m_EditorClassIdentifier: 
-  islandRadius: 1
+  islandRadius: 1.23
   noiseLayers:
   - enabled: 1
     useFirstLayerAsMask: 0
     additive: 1
     noiseSettings:
-      strength: 23.51
+      strength: 16.34
       numLayers: 2
       persistence: 0.385
       roughness: 169.59

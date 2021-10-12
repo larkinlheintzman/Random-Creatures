@@ -20,11 +20,12 @@ public class MassController : MonoBehaviour
   public Vector3 previousPosition = Vector3.zero;
   public Vector3 swingDirection = Vector3.zero;
   public Vector3 previousForward = Vector3.zero;
+  public Vector3 localUp = Vector3.up;
   public Quaternion desiredLookRotation = Quaternion.Euler(0f,0f,0f);
   public float accelerationTilt = 100.0f;
 
 
-  public bool rotationMode = false;
+  public bool mouseRotationMode = false;
 
   public float standingHeight = 2.0f;
   public float rbDrag;
@@ -46,19 +47,12 @@ public class MassController : MonoBehaviour
   float jumpDelayBase = 5.0f; // base jump delay
   float jumpDelayCounter = 0.0f; // counter for delay
 
-  [HideInInspector, Range(1,20)]
-  public float playerSpeedMult = 4.0f;
-  [HideInInspector, Range(1,10)]
+  public float playerSpeedMult = 20.0f;
   public float playerAirSpeedMult = 1.0f;
-  [HideInInspector, Range(1,10)]
   public float playerRunMult = 1.5f;
-  [HideInInspector, Range(0,1)]
   public float playerRotationSpeed = 0.1f;
-  [HideInInspector, Range(1,20)]
   public float playerJumpSpeed = 20.0f;
-  [HideInInspector, Range(0,5)]
   public float groundedMaxDistance = 1.05f; // set more better
-  [HideInInspector, Range(0,1)]
   public float rotationSpeed = 0.2f;
 
   [HideInInspector]
@@ -76,7 +70,7 @@ public class MassController : MonoBehaviour
     rb = rigidbod;
     rbDrag = rb.drag;
     rbMass = rb.mass;
-    rb.useGravity = true;
+    rb.useGravity = false;
     rb.isKinematic = false;
 
     generator = gen;
@@ -94,15 +88,15 @@ public class MassController : MonoBehaviour
     {
       if (playerManager.inputManager.runPressed)
       {
-        rb.AddForce(playerSpeedMult * playerRunMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
+        rb.AddForce(playerSpeedMult * playerRunMult * MapToInputSpace(playerManager.inputManager.movementInput));
       }
       else
       {
-        rb.AddForce(playerSpeedMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
+        rb.AddForce(playerSpeedMult * MapToInputSpace(playerManager.inputManager.movementInput));
       }
     }
     else {
-      rb.AddForce(playerSpeedMult * playerAirSpeedMult * generator.MapToInputSpace(playerManager.inputManager.movementInput));
+      rb.AddForce(playerSpeedMult * playerAirSpeedMult * MapToInputSpace(playerManager.inputManager.movementInput));
     }
   }
 
@@ -110,7 +104,7 @@ public class MassController : MonoBehaviour
   {
     distanceToGround = maxGroundDistance;
     RaycastHit hit = new RaycastHit();
-    if (Physics.Raycast (transform.position, -Vector3.up, out hit, Mathf.Infinity, layerMask)) {
+    if (Physics.Raycast (transform.position, -localUp, out hit, 1000f, layerMask)) {
       distanceToGround = Mathf.Min(hit.distance, maxGroundDistance);
     }
   }
@@ -121,37 +115,34 @@ public class MassController : MonoBehaviour
     if(generator.isPlayer && !playerManager.inputManager.isSliding)
     {
 
-      if (!rotationMode)
+      if (!mouseRotationMode)
       {
         if (playerManager.inputManager.movementInput.sqrMagnitude != 0)
         {
-          lastMappedMoveLook = generator.MapToInputSpace(playerManager.inputManager.movementInput);
-          Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, Vector3.up);
+          lastMappedMoveLook = MapToInputSpace(playerManager.inputManager.movementInput);
+          Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, localUp);
           Quaternion lerpedLookRotation = Quaternion.Lerp(transform.rotation, moveLookRotation, rotationSpeed);
           desiredLookRotation = moveLookRotation;
-          // transform.rotation = lerpedLookRotation;
         }
         else
         {
-          // TODO put normals here instead of ups
-          Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, Vector3.up); // look in last direction if no inputs
+          Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, localUp); // look in last direction if no inputs
           desiredLookRotation = moveLookRotation;
         }
       }
       else
       {
-        Vector3 lastMappedMoveLook = generator.MapToInputSpace(Vector3.forward);
-        Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, transform.up);
+        Vector3 lastMappedMoveLook = MapToInputSpace(Vector3.forward);
+        Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, localUp);
         Quaternion lerpedLookRotation = Quaternion.Lerp(transform.rotation, moveLookRotation, rotationSpeed);
         desiredLookRotation = moveLookRotation;
-        // transform.rotation = lerpedLookRotation;
       }
 
     }
     else if (generator.isPlayer && playerManager.inputManager.isSliding)
     {
       // again normals here
-      Quaternion velocityLookRotation = Quaternion.LookRotation(rb.velocity, Vector3.up);
+      Quaternion velocityLookRotation = Quaternion.LookRotation(rb.velocity, localUp);
       desiredLookRotation = Quaternion.Lerp(transform.rotation, velocityLookRotation, 2.0f*rotationSpeed);
     }
 
@@ -181,7 +172,7 @@ public class MassController : MonoBehaviour
     // if (motionFlag)
     if (false)
     {
-      Quaternion swingLookRotation = Quaternion.LookRotation(Vector3.Reflect(swing, transform.right), Vector3.up);
+      Quaternion swingLookRotation = Quaternion.LookRotation(Vector3.Reflect(swing, transform.right), localUp);
       desiredLookRotation = Quaternion.Lerp(desiredLookRotation, swingLookRotation, swingTurnMult*rotationSpeed);
     }
 
@@ -230,8 +221,6 @@ public class MassController : MonoBehaviour
   {
 
     // need a slight restoring force downwards to reach a standing position rather than only pushing up?
-    rb.AddForce(9.81f*Vector3.down);
-
     if(generator.isGrounded) // have some support from limbs
     {
       float kp = (6f*ctrlFrequency)*(6f*ctrlFrequency)* 0.25f;
@@ -240,18 +229,20 @@ public class MassController : MonoBehaviour
       float g = 1 / (1 + kd * dt + kp * dt * dt);
       float ksg = kp * g;
       float kdg = (kd + kp * dt) * g;
-      Vector3 Pdes = rb.position + Vector3.up*(generator.limbSupport - standingHeight);
-      // Vector3 Pdes = rb.position + Vector3.up*standingHeight;
+      Vector3 Pdes = rb.position + localUp*(generator.limbSupport - standingHeight);
       Vector3 Vdes = Vector3.zero;
       Vector3 Pt0 = rb.position;
       Vector3 Vt0 = rb.velocity;
       Vector3 F = (Pdes - Pt0) * ksg + (Vdes - Vt0) * kdg;
-      // obviously Vector3.up/down will be changed to match ground angle at some point
-      // rb.AddForce(9.81f*Vector3.up);
-      if (F.y >= 0.0f)
+      // need to apply force ONLY in localUp direction not side ta side and not down
+      // dont apply if not in same dir as up
+      // no WAY that comes to bite my ass
+      if (Vector3.Dot(F, transform.up) > 0f)
       {
-        rb.AddForce(new Vector3(0.0f, F.y, 0.0f));
+        Vector3 Fp = Vector3.Project(F, transform.up);
+        rb.AddForce(Fp);
       }
+
     }
 
     // update sliding mechanic
@@ -280,11 +271,11 @@ public class MassController : MonoBehaviour
       HandleJumpMotion();
       if (playerManager.inputManager.aiming)
       {
-        rotationMode = true;
+        mouseRotationMode = true;
       }
       else
       {
-        rotationMode = false;
+        mouseRotationMode = false;
       }
     }
 
@@ -299,7 +290,8 @@ public class MassController : MonoBehaviour
     if (isJumping && jumpDelayCounter > jumpDelayBase)
     {
 
-      jumpVelocity = new Vector3(0.0f, (((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed), 0.0f);
+      // jumpVelocity = new Vector3(0.0f, (((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed), 0.0f);
+      jumpVelocity = localUp*(((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed);
       if (playerManager.inputManager.jumpPressed) // still holding button
       {
         jumpDelayCounter -= 1; // count down to lift off
@@ -329,7 +321,7 @@ public class MassController : MonoBehaviour
       }
     }
 
-    if (playerManager.inputManager.jumpPressed && generator.isGrounded && !isJumping)
+    if (playerManager.inputManager.jumpPressed && generator.isGrounded && !isJumping && generator.energy.hasGas)
     {
       // Handle jump motion
       isJumping = true;
@@ -337,5 +329,27 @@ public class MassController : MonoBehaviour
       // print("jump requested");
     }
   }
+
+  public Vector3 MapToInputSpace(Vector3 worldInput)
+  {
+    Vector3 desiredVelocity;
+    if (generator.cameraTransform) {
+
+      Vector3 forward = generator.cameraTransform.forward - localUp * Vector3.Dot(generator.cameraTransform.forward, localUp);
+      Vector3 right = Vector3.Cross(forward.normalized, localUp).normalized;
+      // Vector3 right = generator.cameraTransform.right - localUp * Vector3.Dot(generator.cameraTransform.right, localUp);
+      // Debug.DrawLine(transform.position, transform.position + 2f*right, Color.red, 0.1f);
+      // Debug.DrawLine(transform.position, transform.position + 2f*forward, Color.blue, 0.1f);
+      desiredVelocity = (-worldInput.x*right + worldInput.z*forward);
+    }
+    else
+    {
+      desiredVelocity = worldInput;
+    }
+    // Debug.DrawLine(transform.position, transform.position + 4f*worldInput, Color.green, 0.1f);
+    // Debug.DrawLine(transform.position, transform.position + 5f*desiredVelocity, Color.white, 0.1f);
+    return desiredVelocity;
+  }
+
 
 }

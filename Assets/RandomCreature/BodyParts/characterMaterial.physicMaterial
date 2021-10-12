@@ -9,6 +9,6 @@ PhysicMaterial:
   m_Name: characterMaterial
   dynamicFriction: 0
   staticFriction: 0
-  bounciness: 0
-  frictionCombine: 0
+  bounciness: 0.21
+  frictionCombine: 1
   bounceCombine: 0

@@ -7,9 +7,9 @@ public class BlockAddOn : MonoBehaviour
   public Vector3 dims = new Vector3(1f,1f,1f);
   public bool isTrigger;
   public Collider col;
-  public RandomCityGenerator generator;
+  public CityStarGenerator generator;
 
-  public virtual void Initialize(RandomCityGenerator generator, Block block, Vector3 pos, Vector3 dir)
+  public virtual void Initialize(CityStarGenerator generator, Block block, Vector3 pos, Vector3 dir)
   {
 
     col = gameObject.GetComponent<Collider>();

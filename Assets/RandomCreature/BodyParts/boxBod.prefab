@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4673562100850790063}
   - component: {fileID: 1414382985638616079}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: rightArmSpot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -61,7 +61,7 @@ GameObject:
   - component: {fileID: 8028461892211584073}
   - component: {fileID: 7606660814992233054}
   - component: {fileID: 6811011016062752460}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -429,7 +429,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2705074363762447578}
   - component: {fileID: 223545880499314933}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -473,7 +473,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8196365600555193705}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: LimbObj
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -504,7 +504,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1800080543011368370}
   - component: {fileID: 3616437825074649541}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: rightLegSpot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -552,7 +552,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5204208633117041289}
   - component: {fileID: 6322783378728537574}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: boxBod
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -604,7 +604,7 @@ MonoBehaviour:
   tiltSpeed: 0.037
   motionMass: 0.25
   motionDrag: 2
-  deathParticles: {fileID: 2744712733975126944, guid: 40da6d211f2e2884cadeacf615f91181, type: 3}
+  bodyParticles: {fileID: 0}
   idleMoveTime: 0.1
 --- !u!1 &5204208633318468116
 GameObject:
@@ -616,7 +616,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5204208633318468117}
   - component: {fileID: 5204208633318468118}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: leftLegSpot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -664,7 +664,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7694568305173506112}
   - component: {fileID: 9111929259924667182}
-  m_Layer: 2
+  m_Layer: 3
   m_Name: leftArmSpot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -714,7 +714,7 @@ GameObject:
   - component: {fileID: 659546695017642692}
   - component: {fileID: 2391652610711163311}
   - component: {fileID: 30059999018918054}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bod
   m_TagString: Untagged
   m_Icon: {fileID: 0}

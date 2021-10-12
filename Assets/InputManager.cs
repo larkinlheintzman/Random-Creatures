@@ -31,6 +31,8 @@ public class InputManager : MonoBehaviour
   public bool aiming = false;
   public bool isSliding = false;
   public bool initialized = false;
+  public bool scrollPressed = false;
+  public Vector2 scrollValue = Vector2.zero;
 
   public static bool CheckEquality<T>(T[] first, T[] second)
   {
@@ -265,6 +267,14 @@ public class InputManager : MonoBehaviour
         }
       };
 
+      inputs.controls.Zoom.performed += ctx =>
+      {
+        scrollValue = ctx.ReadValue<Vector2>();
+        print($"new scroll val {scrollValue}");
+        // must be reset by something
+        scrollPressed = true;
+      };
+
       inputs.controls.Enable();
       Cursor.lockState = CursorLockMode.Locked;
       initialized = true;
@@ -329,7 +339,7 @@ public class InputManager : MonoBehaviour
   {
     if (isLocalPlayer && initialized)
     {
-      inputs.controls.Disable();
+      if (inputs != null) inputs.controls.Disable();
       Cursor.lockState = CursorLockMode.None;
     }
   }

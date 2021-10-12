@@ -12,10 +12,12 @@ public class PlayerManager : Manager
   public Transform player;
   public Camera playerCamera;
   public GameObject playerCameraObject;
-  public NetworkTransformChild networkTransform;
   public Camera lobbyCamera;
   public GameObject lobbyCameraObject;
   public AudioListener lobbyAudio;
+  public Slider healthBar; // health graphical element
+  public Slider energyBar; // energy ...
+  public int[] presetLimbIds = new int[4];
 
   public int numPlayers = 0;
   public bool allPlayersReadyFlag = false;
@@ -24,7 +26,6 @@ public class PlayerManager : Manager
   public void PlayerCameraActive(bool active)
   {
     // turns on the players camera and disables the lobby camera
-    // Debug.Log($"turning on/off {active} player {gameObject.name}'s camera");
     if (lobbyCameraObject == null) lobbyCameraObject = GameObject.Find("LobbyCamera");
     if (lobbyCameraObject == null) return; // no lobby camera we yeet
     lobbyCamera = lobbyCameraObject.GetComponent<Camera>();
@@ -36,7 +37,7 @@ public class PlayerManager : Manager
       OrbitCamera orbitCamera = playerCamera.transform.parent.gameObject.GetComponent<OrbitCamera>();
       if (!orbitCamera.initialized)
       {
-        orbitCamera.Initialize();
+        orbitCamera.Initialize(this);
       }
       playerCamera.enabled = true;
       playerAudio.enabled = true;
@@ -76,44 +77,40 @@ public class PlayerManager : Manager
   public override void Initialize()
   {
     playerCameraObject = playerCamera.gameObject;
+    // move it outside the player: expando prefabs tm
+    // playerCameraObject.transform.parent.transform.parent = null;
 
     // increment player count
     CmdEditPlayerNumber(1);
-
-    // particleContainer = GetComponent<ParticleContainer>();
-    // creatureGenerator = GetComponentInChildren<CreatureGenerator>(); // should only be 1
     particleContainer = GetComponent<ParticleContainer>();
     inputManager = GetComponent<InputManager>();
-    creatureGenerator = GetComponentInChildren<CreatureGenerator>();
-    int[] tempLimbIds = creatureGenerator.RandomizeCreature();
+    creatureGenerator = GetComponent<CreatureGenerator>();
+    int[] tempLimbIds = creatureGenerator.BuildFromIds(presetLimbIds);
+
 
     if (isLocalPlayer)
     {
       CmdSyncLimbs(tempLimbIds);
-      // cachedEquippedLimbs = tempLimbIds;
-      // creatureGenerator.RandomizeCreature(); // make pler
-      // turn off lobby camera and turn on own
-      // if (!Scene.name.Contains("lobby") && !Scene.name.Contains("Lobby"))
-      // {
       PlayerControlsActive(true);
       PlayerCameraActive(true);
-      // }
 
       // get go button
       GameObject readyButtonObj = GameObject.Find("ReadyButton");
       GameObject notReadyButtonObj = GameObject.Find("UnReadyButton");
-      // if (readyButtonObj == null || notReadyButtonObj == null || allPlayersReadyFlag) PlayerReady(); // auto ready if cant find buttons
       if (readyButtonObj != null && notReadyButtonObj != null)
       {
         readyButtonObj.GetComponent<Button>().onClick.AddListener(PlayerReady);
         notReadyButtonObj.GetComponent<Button>().onClick.AddListener(PlayerNotReady);
       }
 
-      // get network manager to swap scenes
-      netManager = FindObjectOfType<GameNetworkManager>();
-      for(int i = 0; i < creatureGenerator.limbs.Length; i++)
+      if (hasAuthority)
       {
-        netManager.spawnPrefabs.Add(creatureGenerator.limbs[i].gameObject);
+        // get network manager to swap scenes
+        netManager = FindObjectOfType<GameNetworkManager>();
+        for(int i = 0; i < creatureGenerator.limbs.Length; i++)
+        {
+          netManager.spawnPrefabs.Add(creatureGenerator.limbs[i].gameObject);
+        }
       }
 
     }
@@ -134,7 +131,6 @@ public class PlayerManager : Manager
       if (inputManager.inputsChangedFlag)
       {
         inputManager.inputsChangedFlag = false;
-        Debug.Log("registered input change from player: " + netId.ToString());
         CmdSendInputsToServer(inputManager.PackageInputs());
       }
     }
@@ -287,6 +283,10 @@ public class PlayerManager : Manager
     }
     else
     {
+      PlayerCameraActive(false);
+      PlayerControlsActive(false);
+      PlayerCameraActive(true);
+      PlayerControlsActive(true);
       allPlayersReadyFlag = true;
       indPlayerReadyFlag = true;
     }
@@ -313,19 +313,11 @@ public class PlayerManager : Manager
     if (isLocalPlayer)
     {
       PlayerCameraActive(false);
+      // delete camera obj
+
     }
     if (creatureGenerator != null) creatureGenerator.Die(false);
     base.OnStopClient();
   }
-
-  // public void OnEnable()
-  // {
-  //   Debug.Log($"player {gameObject.name} enabled");
-  // }
-  //
-  // public void OnDisable()
-  // {
-  //   Debug.Log($"player {gameObject.name} disabled");
-  // }
 
 }

@@ -53,6 +53,7 @@ public class BoneCollider : MonoBehaviour
     {
       this.initialized = true;
       this.rb = GetComponent<Rigidbody>();
+      this.rb.useGravity = false;
       this.boneCollider = GetComponent<Collider>();
       this.layerMask = layerMask;
     }

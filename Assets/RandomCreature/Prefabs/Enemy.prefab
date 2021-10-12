@@ -100,6 +100,7 @@ MonoBehaviour:
   initialized: 0
   netManager: {fileID: 0}
   cachedEquippedLimbs: 
+  sceneIndexCounter: 0
   limbs:
   - {fileID: -5943918332085871894, guid: ec7fd83151ff7cd4bb5fc730e963a78b, type: 3}
   - {fileID: 7144654338790656893, guid: ca6b0d69c757b4d48960d1888b0532d8, type: 3}

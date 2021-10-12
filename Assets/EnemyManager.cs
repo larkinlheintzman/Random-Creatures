@@ -23,6 +23,10 @@ public class EnemyManager : Manager
     target.gameObject.name = "playerTrackingTarget";
     target.parent = transform;
     agent = GetComponent<NavMeshAgent>();
+    // if (!agent.isOnNavMesh)
+    // {
+    //   agent.enabled = false;
+    // }
 
     initialized = true;
   }
@@ -44,6 +48,11 @@ public class EnemyManager : Manager
   {
     if (initialized)
     {
+      // if (!agent.isOnNavMesh)
+      // {
+      //   return;
+      // }
+      // else if (agent.enabled)
       // find all player managers in scene, chase one
       players = FindObjectsOfType<PlayerManager>();
       float maxDist = Mathf.Infinity;
@@ -59,7 +68,10 @@ public class EnemyManager : Manager
 
       float distance = Vector3.Distance(target.position, transform.position);
       if (distance < chaseDistance) {
-        agent.SetDestination(target.position);
+        if (agent.isOnNavMesh)
+        {
+          agent.SetDestination(target.position);
+        }
       }
       if (distance < lookDistance) lookEnabled = true;
       else lookEnabled = false;

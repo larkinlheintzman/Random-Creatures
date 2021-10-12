@@ -2,18 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEngine.AI;
+
+[System.Serializable]
+public class BlockProb
+{
+    public Block blk;
+    [Range(0f,1f)]
+    public float prob;
+}
 
 public class RandomCityGenerator : MonoBehaviour
 {
 
+  [Header("Block Dimensions")]
   [SerializeField]
-  public Block[] blockPrefabs;
+  public BlockProb[] blockPrefabs;
   [SerializeField]
-  public Block[] floorPrefabs;
+  public BlockProb[] floorPrefabs;
   [SerializeField]
-  public BlockAddOn[] addOnPrefabs;
+  public BlockProb[] verticleAddOns;
   [SerializeField]
-  public SideWalkAddOn[] sideWalkPrefabs;
+  public BlockProb[] horizontalAddOns;
   [SerializeField]
   public Vector2 gridDimensions = new Vector2(10f, 10f);
   [SerializeField]
@@ -25,15 +35,13 @@ public class RandomCityGenerator : MonoBehaviour
   [SerializeField]
   public Vector3 blockSizeBase = new Vector3(1f,1f,1f);
   [SerializeField]
-  public Vector2 floorIncrements = new Vector2(10f, 10f);
+  public Vector3 blockRotationNoise = new Vector3(1f,1f,1f);
+  [SerializeField]
+  public float childSizeScaler = 0.85f;
+
+  [Header("City Behaviour")]
   [SerializeField]
   public float generationThreshold = 0.05f;
-  [SerializeField, Range(0.1f, 5f)]
-  public float sideWalkThickness = 2.0f; // as in curb height
-  [SerializeField]
-  public float sideWalkWidth = 5.0f; // as in from wall of building
-  [SerializeField]
-  public float addOnCheckDistance = 3.0f;
   [SerializeField]
   public float distanceNoisePower = 1f;
   [SerializeField]
@@ -41,13 +49,11 @@ public class RandomCityGenerator : MonoBehaviour
   [SerializeField]
   public LayerMask blockLayerMask;
   [SerializeField]
-  [HideInInspector]
   public Block[] generatedBlocks;
   [SerializeField]
-  [HideInInspector]
-  public Block[] generatedFloors;
-  [SerializeField]
   public bool blocksGenerated = false;
+
+  [Header("City Textures")]
   [SerializeField]
   public RenderTexture cityTexture;
   [SerializeField]
@@ -58,22 +64,25 @@ public class RandomCityGenerator : MonoBehaviour
   public Texture2D genTexture;
   [SerializeField]
   public Texture2D dirTexture;
+
+  [Header("City Noise Settings")]
   [SerializeField]
   public ShapeGenerator shapeGenerator;
   [SerializeField]
   public ShapeSettings shapeSettings;
 
-  // void OnValidate()
-  // {
-  //   GenerateLevel();
-  // }
+  [Header("Tree Params")]
+  [SerializeField]
+  public int maxDepth = 5;
+
+  [Header("NavMesh Params")]
+  public NavMeshSurface surface;
 
   WaitForEndOfFrame frameEnd = new WaitForEndOfFrame();
 
   public void SaveTextureToImage(RenderTexture rt, string filename)
   {
       // yield return frameEnd;
-
       Texture2D virtualPhoto = new Texture2D(cityGrid.size,cityGrid.size, TextureFormat.RGB24, false);
       RenderTexture.active = rt;
       // false, meaning no need for mipmaps
@@ -96,26 +105,62 @@ public class RandomCityGenerator : MonoBehaviour
     return r;
   }
 
+  public int ProbPick(BlockProb[] blockArray)
+  {
+    // pick from listed blocks using probability weighting
+    // float[] cumsum = new float[blockArray.Length];
+    // cumsum[i] = sum;
+    float sum = 0f;
+    float randTest = Random.value; // test point
+    for (int i = 0; i < blockArray.Length; i++)
+    {
+      sum += blockArray[i].prob;
+      if (randTest < sum)
+      {
+        // picked this blk
+        return i;
+      }
+    }
+    return blockArray.Length - 1;
+
+  }
+
   public void GenerateBlocks()
   {
     if (!blocksGenerated)
     {
       // generate block where white is not
       Block[] newBlocks = new Block[(int)(gridDimensions.x*gridDimensions.y)];
-      // could be weird if floors dont evenly divide but whatever
-      Block[] newFloors = new Block[(int)((gridDimensions.x/floorIncrements.x)*(gridDimensions.y/floorIncrements.y))];
       int numBlockPrefabs = blockPrefabs.Length;
-      int numFloorPrefabs = floorPrefabs.Length;
-      for (int i = 0; i < gridDimensions.x*gridDimensions.y; i++) {
-        newBlocks[i] = Instantiate(blockPrefabs.PickOne(), transform);
-        newBlocks[i].transform.localPosition = Vector3.zero;
-      }
-      for (int i = 0; i < (gridDimensions.x/floorIncrements.x)*(gridDimensions.y/floorIncrements.y); i++) {
-        newFloors[i] = Instantiate(floorPrefabs.PickOne(), transform);
-        newFloors[i].transform.localPosition = Vector3.zero;
+      int counter = 0;
+      for (int i = 0; i < gridDimensions.x; i++)
+      {
+        for (int j = 0; j < gridDimensions.y; j++)
+        {
+
+          int ind = ProbPick(blockPrefabs);
+          newBlocks[counter] = Instantiate(blockPrefabs[ind].blk, transform);
+          newBlocks[counter].transform.localPosition = Vector3.zero;
+
+          // give block a floor, it'll clean it up
+          ind = ProbPick(floorPrefabs);
+          if (ind != -1)
+          {
+            Block newFloor = Instantiate(floorPrefabs[ind].blk, newBlocks[counter].transform);
+            newFloor.transform.parent = null;
+            newFloor.transform.rotation = Quaternion.identity;
+            newFloor.transform.localScale = new Vector3(gridScale.x, 1.0f, gridScale.y);
+
+            Vector2 gridOffset = new Vector3(gridDimensions.x/2f, gridDimensions.y/2f);
+            newFloor.transform.position = new Vector3(gridScale.x*(i - gridOffset.x), 0.0f, gridScale.y*(j - gridOffset.y)) + transform.position;
+            // please god pray for my hierarchy
+            newFloor.transform.parent = transform;
+          }
+
+          counter++;
+        }
       }
       generatedBlocks = newBlocks;
-      generatedFloors = newFloors;
       blocksGenerated = true;
     }
     else
@@ -138,8 +183,6 @@ public class RandomCityGenerator : MonoBehaviour
 
     Block[] newBlocks = new Block[(int)(gridDimensions.x*gridDimensions.y)];
     generatedBlocks = newBlocks;
-    Block[] newFloors = new Block[(int)(((float)gridDimensions.x/floorIncrements.x)*((float)gridDimensions.y/floorIncrements.y))];
-    generatedFloors = newFloors;
   }
 
   public void Start()
@@ -169,21 +212,6 @@ public class RandomCityGenerator : MonoBehaviour
       dirTexture.LoadImage(imgBytes);
     }
 
-    // sort add ons
-    // List<SideWalkAddOn> sideWalkList = new List<SideWalkAddOn>();
-    // List<BlockAddOn> addOnList = new List<BlockAddOn>();
-    // foreach(BlockAddOn addOn in addOnPrefabs)
-    // {
-    //   if (addOn is SideWalkAddOn)
-    //   {
-    //     sideWalkList.Add((SideWalkAddOn)addOn);
-    //   }
-    //   else
-    //   {
-    //     addOnList.Add(addOn);
-    //   }
-    // }
-
     GenerateBlocks();
     GenerateCity();
 
@@ -196,11 +224,6 @@ public class RandomCityGenerator : MonoBehaviour
 
     return val*(Mathf.Pow(xWeight*yWeight, distanceNoisePower));
   }
-
-  // public float GaussianDist(float )
-  // {
-  //
-  // }
 
   public void GenerateCity()
   {
@@ -215,7 +238,6 @@ public class RandomCityGenerator : MonoBehaviour
         for (int j = 0; j < gridDimensions.y; j++)
         {
           int index = (int)(i*gridDimensions.x + j);
-          // Debug.Log("linear index: " + index.ToString() + "/" + generatedBlocks.Length.ToString());
           if (index >= generatedBlocks.Length)
           {
             return;
@@ -225,7 +247,7 @@ public class RandomCityGenerator : MonoBehaviour
           {
             return;
           }
-          Vector3 pointInUnitPlane = new Vector3((float)i/(float)(gridDimensions.x - 1), (float)j/(float)(gridDimensions.y - 1));
+          Vector3 pointInUnitPlane = new Vector3((float)i/(float)(gridDimensions.x - 1), 0.0f, (float)j/(float)(gridDimensions.y - 1));
           float noiseValue = shapeGenerator.CalculateNoise(pointInUnitPlane);
           noiseValue = DistanceNoiseScaling(noiseValue, i/gridDimensions.x, j/gridDimensions.y);
           int xpix = (int)(i*(cityGrid.size/gridDimensions.x)*gridPixelScale.x);
@@ -239,12 +261,15 @@ public class RandomCityGenerator : MonoBehaviour
           if (generationVal < generationThreshold)
           {
             blk.gameObject.SetActive(true);
-            Vector3 tempDimensions = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseValue, blockSizeBase.y + blockSizeScale.y*noiseValue, blockSizeBase.z + blockSizeScale.z*noiseValue);
             // rotate block to face towards dirval
+            Vector3 tempDimensions = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseValue, blockSizeBase.y + blockSizeScale.y*noiseValue, blockSizeBase.z + blockSizeScale.z*noiseValue);
             blk.transform.rotation = Quaternion.LookRotation(directionVal, blk.transform.up);
-            blk.transform.position = new Vector3(gridScale.x*(i - gridOffset.x), tempDimensions.y/2f, gridScale.y*(j - gridOffset.y)) + transform.position;
-            blk.dims = tempDimensions;
-            blk.Initialize(this);
+
+            blk.transform.position = new Vector3(gridScale.x*(i - gridOffset.x), 0.0f, gridScale.y*(j - gridOffset.y)) + transform.position;
+            // blk.transform.localScale = tempDimensions;
+                      // blk.Initialize(this, 0, tempDimensions);
+
+            //TODO this is where we block out the texture to inform other block placements
           }
           else
           {
@@ -253,43 +278,9 @@ public class RandomCityGenerator : MonoBehaviour
           }
         }
       }
-
-      // place floors where they need to go
-      for (int i = 0; i < ((float)gridDimensions.x/floorIncrements.x); i++) {
-        for (int j = 0; j < ((float)gridDimensions.y/floorIncrements.y); j++) {
-          int index = (int)(i*((float)gridDimensions.x/floorIncrements.x) + j);
-          // Debug.Log("linear index: " + index.ToString() + "/" + generatedBlocks.Length.ToString());
-          if (index >= generatedFloors.Length)
-          {
-            Debug.Log("floor derped");
-            // ResetBlocks();
-            return;
-          }
-          Block flr = generatedFloors[index];
-          if (flr == null)
-          {
-            // ResetBlocks();
-            return;
-          }
-          flr.transform.position = new Vector3(gridScale.x*(i*floorIncrements.x - gridOffset.x + floorIncrements.x/2f) - blockSizeBase.x, -0.5f, gridScale.y*(j*floorIncrements.y - gridOffset.y + floorIncrements.y/2f) - blockSizeBase.z) + transform.position;
-
-          // float generationVal = Mathf.Infinity;
-          flr.gameObject.SetActive(true);
-          flr.dims = new Vector3(gridScale.x*(floorIncrements.x),1f,gridScale.y*(floorIncrements.y));
-          flr.Initialize(this);
-        }
-      }
+      // // update agent nav mesh
+      surface.BuildNavMesh();
     }
-
-    // go back through and initialize
-    // for (int i = 0; i < generatedBlocks.Length; i++) {
-    //   Block blk = generatedBlocks[i];
-    //   blk.Initialize(this);
-    // }
-    // for (int i = 0; i < generatedFloors.Length; i++) {
-    //   Block flr = generatedFloors[i];
-    //   flr.Initialize(this);
-    // }
   }
 
   public void OnShapeSettingsUpdated()
