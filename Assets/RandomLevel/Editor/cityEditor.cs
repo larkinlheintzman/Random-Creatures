@@ -14,9 +14,10 @@ public class cityEditor : Editor
     using (var check = new EditorGUI.ChangeCheckScope())
     {
       base.OnInspectorGUI(); // do usual stuff
-      if (check.changed)
+      if (check.changed && Application.isPlaying)
       {
         // regenerate level on change in inspector
+        // city.GenerateBlocks();
         city.GenerateCity();
       }
     }

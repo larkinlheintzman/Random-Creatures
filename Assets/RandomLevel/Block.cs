@@ -56,21 +56,24 @@ public class Block : MonoBehaviour
     }
 
     // check collisions
-    bool hitBool = false;
-    container.enabled = false;
-    Collider[] hitColliders = Physics.OverlapBox(container.bounds.center, container.bounds.extents, transform.rotation, generator.blockLayerMask);
-    if (hitColliders.Length > 0) hitBool = true;
-    if (!hitBool && depth + 1 < generator.maxDepth)
+    if (container)
     {
-      container.enabled = true;
-    }
-    else
-    {
-      print($"hit other box, turning off");
-      gameObject.SetActive(false);
-      // Destroy(gameObject);
-      return;
-      // kid.gameObject.SetActive(false);
+      bool hitBool = false;
+      container.enabled = false;
+      Collider[] hitColliders = Physics.OverlapBox(container.bounds.center, container.bounds.extents, transform.rotation, generator.blockLayerMask);
+      if (hitColliders.Length > 0) hitBool = true;
+      if (!hitBool && depth + 1 < generator.maxDepth)
+      {
+        container.enabled = true;
+      }
+      else
+      {
+        print($"hit other box, turning off");
+        gameObject.SetActive(false);
+        // Destroy(gameObject);
+        return;
+        // kid.gameObject.SetActive(false);
+      }
     }
 
     // clear out children in case of re init

@@ -19,7 +19,7 @@ public class ShapeGenerator
       }
     }
 
-    public Vector3 CalculatePointOnIsland(Vector3 pointOnUnitSphere)
+    public Vector3 CalculatePointOnPlanet(Vector3 pointOnUnitSphere)
     {
 
       float firstLayerValue = 0.0f;

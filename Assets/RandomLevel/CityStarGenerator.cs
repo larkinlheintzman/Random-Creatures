@@ -19,6 +19,8 @@ public class CityStarGenerator : MonoBehaviour
   [SerializeField]
   public BlockProb[] blockPrefabs;
   [SerializeField]
+  public BlockProb[] antiBlockPrefabs;
+  [SerializeField]
   public BlockProb[] spherePrefabs;
   [SerializeField]
   public BlockProb[] verticleAddOns;
@@ -51,6 +53,8 @@ public class CityStarGenerator : MonoBehaviour
   [SerializeField]
   public LayerMask blockLayerMask;
   [SerializeField]
+  public LayerMask planetLayerMask;
+  [SerializeField]
   public Block[] generatedBlocks;
   [SerializeField]
   public bool blocksGenerated = false;
@@ -79,6 +83,9 @@ public class CityStarGenerator : MonoBehaviour
 
   [Header("NavMesh Params")]
   public NavMeshSurface surface;
+
+  private RaycastHit raycastHit;
+  private int gimmieFrames = 3;
 
   WaitForEndOfFrame frameEnd = new WaitForEndOfFrame();
 
@@ -127,46 +134,6 @@ public class CityStarGenerator : MonoBehaviour
 
   }
 
-  public void GenerateBlocks()
-  {
-    if (!blocksGenerated)
-    {
-      // generate block where white is not
-      Block[] newBlocks = new Block[(int)(nodeNumber)];
-      int numBlockPrefabs = blockPrefabs.Length;
-
-      // make planet
-      int sInd = ProbPick(spherePrefabs);
-      if (sInd != -1)
-      {
-        Block newEarth = Instantiate(spherePrefabs[sInd].blk, transform);
-        newEarth.transform.localScale = starRadius*2*Vector3.one;
-      }
-
-      int counter = 0;
-      for (int i = 0; i < nodeNumber; i++)
-      {
-
-        int ind = ProbPick(blockPrefabs);
-        if (ind != -1)
-        {
-          newBlocks[counter] = Instantiate(blockPrefabs[ind].blk, transform);
-          newBlocks[counter].transform.localPosition = Vector3.zero;
-        }
-
-        counter++;
-      }
-
-      generatedBlocks = newBlocks;
-      blocksGenerated = true;
-    }
-    else
-    {
-      ResetBlocks();
-      GenerateBlocks();
-    }
-  }
-
   public void ResetBlocks()
   {
     blocksGenerated = false;
@@ -209,7 +176,9 @@ public class CityStarGenerator : MonoBehaviour
       dirTexture.LoadImage(imgBytes);
     }
 
-    GenerateBlocks();
+    // GenerateBlocks();
+    // GenerateCity();
+    // twiddle thumbs
     GenerateCity();
 
   }
@@ -224,55 +193,102 @@ public class CityStarGenerator : MonoBehaviour
 
   public void GenerateCity()
   {
-    if (blocksGenerated && nodeNumber == generatedBlocks.Length)
+    ResetBlocks();
+    Vector3[] spherePoints = PointsOnSphere(nodeNumber);
+    shapeGenerator = new ShapeGenerator(shapeSettings);
+
+    // make planet
+    int sInd = ProbPick(spherePrefabs);
+    if (sInd != -1)
     {
-
-      Vector3[] spherePoints = PointsOnSphere(nodeNumber);
-      shapeGenerator = new ShapeGenerator(shapeSettings);
-
-      // place blocks where they need to go
-      for (int i = 0; i < nodeNumber; i++)
+      Block newEarth = Instantiate(spherePrefabs[sInd].blk, transform);
+      newEarth.transform.localScale = starRadius*2*Vector3.one;
+      planetTerrainGenerator planetMesher = newEarth.gameObject.GetComponentInChildren<planetTerrainGenerator>();
+      if (planetMesher != null)
       {
-        Block blk = generatedBlocks[i];
-        if (blk == null)
-        {
-          return;
-        }
-        Vector3 pointOnUnitSphere = spherePoints[i];
-        // Vector3 pointInUnitPlane = new Vector3((float)i/(float)(gridDimensions.x - 1), 0.0f, (float)j/(float)(gridDimensions.y - 1));
-        float noiseValue = shapeGenerator.CalculateNoise(pointOnUnitSphere);
-
-        // do better sphere mapping later
-        int xpix = (int)(Mathf.Abs(Mathf.Cos(pointOnUnitSphere.x*2f*Mathf.PI))*pixelScale);
-        int ypix = (int)(Mathf.Abs(Mathf.Sin(pointOnUnitSphere.y*2f*Mathf.PI))*pixelScale);
-        float generationVal = genTexture.GetPixel(xpix, ypix).grayscale;
-        Color colorDir = dirTexture.GetPixel(xpix, ypix); // direction stored in red channel
-        float dir = colorDir.r;
-        Vector3 directionVal = new Vector3(Mathf.Cos(dir*Mathf.PI*2.0f), 0.0f, Mathf.Sin(dir*Mathf.PI*2.0f));
-
-        if (generationVal < generationThreshold)
-        {
-          blk.gameObject.SetActive(true);
-          // rotate block to face towards dirval
-          Vector3 tempDimensions = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseValue, blockSizeBase.y + blockSizeScale.y*noiseValue, blockSizeBase.z + blockSizeScale.z*noiseValue);
-          // up is outward from planet (DIRECTION IS DISABLED FOR NOW)
-          Vector3 targetDir = Vector3.forward;
-          Vector3 forward = targetDir - pointOnUnitSphere * Vector3.Dot(targetDir, pointOnUnitSphere);
-
-          blk.transform.rotation = Quaternion.LookRotation(forward, pointOnUnitSphere);
-          blk.transform.position = (starRadius - structureInset)*pointOnUnitSphere + transform.position;
-          // blk.transform.localScale = tempDimensions;
-          blk.Initialize(this, 0, tempDimensions);
-        }
-        else
-        {
-          // Debug.Log("block " + index.ToString() + " did not make it");
-          blk.gameObject.SetActive(false);
-        }
+        // print("meshing...");
+        planetMesher.GenerateMesh();
       }
-      // // update agent nav mesh
-      surface.BuildNavMesh();
+      // newEarth.Initialize(this, 0, starRadius*2*Vector3.one);
     }
+
+    // place blocks where they need to go
+    for (int i = 0; i < nodeNumber; i++)
+    {
+      // if (blk == null)
+      // {
+      //   return;
+      // }
+      Vector3 pointOnUnitSphere = spherePoints[i];
+      // Vector3 pointInUnitPlane = new Vector3((float)i/(float)(gridDimensions.x - 1), 0.0f, (float)j/(float)(gridDimensions.y - 1));
+      float noiseValue = shapeGenerator.CalculateNoise(pointOnUnitSphere);
+
+      // do better sphere mapping later
+      int xpix = (int)(Mathf.Abs(Mathf.Cos(pointOnUnitSphere.x*2f*Mathf.PI))*pixelScale);
+      int ypix = (int)(Mathf.Abs(Mathf.Sin(pointOnUnitSphere.y*2f*Mathf.PI))*pixelScale);
+      float generationVal = genTexture.GetPixel(xpix, ypix).grayscale;
+      Color colorDir = dirTexture.GetPixel(xpix, ypix); // direction stored in red channel
+      float dir = colorDir.r;
+      Vector3 directionVal = new Vector3(Mathf.Cos(dir*Mathf.PI*2.0f), 0.0f, Mathf.Sin(dir*Mathf.PI*2.0f));
+
+      if (generationVal < generationThreshold)
+      {
+        Block blk = Instantiate(blockPrefabs[ProbPick(blockPrefabs)].blk, transform);
+        // blk.gameObject.SetActive(true);
+        // rotate block to face towards dirval
+        Vector3 tempDimensions = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseValue, blockSizeBase.y + blockSizeScale.y*noiseValue, blockSizeBase.z + blockSizeScale.z*noiseValue);
+        // up is outward from planet (DIRECTION IS DISABLED FOR NOW)
+        // Vector3 targetDir = Vector3.forward;
+        // face building randomly
+        Vector3 targetDir = new Vector3(Random.value-0.5f, 0.0f, Random.value-0.5f).normalized;
+        Vector3 forward = targetDir - pointOnUnitSphere * Vector3.Dot(targetDir, pointOnUnitSphere);
+
+        blk.transform.rotation = Quaternion.LookRotation(forward, pointOnUnitSphere);
+        blk.transform.position = (starRadius - structureInset)*pointOnUnitSphere + transform.position;
+        StartCoroutine(FindBlockGround(blk, pointOnUnitSphere, forward, tempDimensions));
+        // if (GetPlanetPoint(pointOnUnitSphere))
+        // {
+        //   blk.transform.rotation = Quaternion.LookRotation(forward, raycastHit.normal);
+        //   blk.transform.position = raycastHit.point;
+        // }
+        // // blk.transform.localScale = tempDimensions;
+      }
+      else
+      {
+        Block blk = Instantiate(antiBlockPrefabs[ProbPick(antiBlockPrefabs)].blk, transform);
+        // blk.gameObject.SetActive(true);
+        // rotate block to face towards dirval
+        Vector3 tempDimensions = new Vector3(blockSizeBase.x + blockSizeScale.x*noiseValue, blockSizeBase.y + blockSizeScale.y*noiseValue, blockSizeBase.z + blockSizeScale.z*noiseValue);
+        // up is outward from planet (DIRECTION IS DISABLED FOR NOW)
+        Vector3 targetDir = Vector3.forward;
+        Vector3 forward = targetDir - pointOnUnitSphere * Vector3.Dot(targetDir, pointOnUnitSphere);
+
+        blk.transform.rotation = Quaternion.LookRotation(forward, pointOnUnitSphere);
+        blk.transform.position = (starRadius - structureInset)*pointOnUnitSphere + transform.position;
+        if (GetPlanetPoint(pointOnUnitSphere))
+        {
+          blk.transform.rotation = Quaternion.LookRotation(forward, raycastHit.normal);
+          blk.transform.position = raycastHit.point;
+        }
+        // blk.transform.localScale = tempDimensions;
+        blk.Initialize(this, 0, tempDimensions);
+      }
+    }
+  }
+
+  public float planetTerrainCheckDistance = 100f;
+  public bool GetPlanetPoint(Vector3 spherePoint)
+  {
+    // w raycasting lol
+    raycastHit = new RaycastHit();
+    Debug.DrawLine(transform.position + spherePoint*planetTerrainCheckDistance, transform.position + spherePoint*starRadius, Color.green, 0.1f);
+    if (Physics.Raycast(transform.position + spherePoint*planetTerrainCheckDistance, -spherePoint, out raycastHit, starRadius + planetTerrainCheckDistance, planetLayerMask))
+    {
+      Debug.DrawLine(transform.position + spherePoint*planetTerrainCheckDistance, transform.position + spherePoint*starRadius, Color.blue, 1.1f);
+      // print("found valid planet side point");
+      return true;
+    }
+    return false;
   }
 
   public Vector3[] PointsOnSphere(int n)
@@ -302,6 +318,24 @@ public class CityStarGenerator : MonoBehaviour
   public void OnShapeSettingsUpdated()
   {
     GenerateCity();
+  }
+
+  public IEnumerator FindBlockGround(Block blk, Vector3 spherePoint, Vector3 localForward, Vector3 dimensions)
+  {
+    bool groundFlag = false;
+    for (int i = 0; i < gimmieFrames; i++)
+    {
+      // print("waiting on ground...");
+      if (GetPlanetPoint(spherePoint) && !groundFlag)
+      {
+        print("found block ground spot!");
+        blk.transform.rotation = Quaternion.LookRotation(localForward, raycastHit.normal);
+        blk.transform.position = raycastHit.point;
+        blk.Initialize(this, 0, dimensions);
+        groundFlag = true;
+      }
+      yield return null;
+    }
   }
 
 }

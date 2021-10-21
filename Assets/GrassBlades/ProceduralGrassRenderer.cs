@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-[ExecuteInEditMode]
+// [ExecuteInEditMode]
 public class ProceduralGrassRenderer : MonoBehaviour {
     // A class to hold grass settings
     [System.Serializable]
@@ -63,7 +63,7 @@ public class ProceduralGrassRenderer : MonoBehaviour {
     }
 
     [Tooltip("A mesh to create grass from. A blade sprouts from the center of every triangle")]
-    [SerializeField] private Mesh sourceMesh = default;
+    [SerializeField] public Mesh sourceMesh = default;
     [Tooltip("The grass geometry creating compute shader")]
     [SerializeField] private ComputeShader grassComputeShader = default;
     [Tooltip("The material to render the grass mesh")]
@@ -110,8 +110,10 @@ public class ProceduralGrassRenderer : MonoBehaviour {
     // 2: start vertex location if using a Graphics Buffer
     // 3: and start instance location if using a Graphics Buffer
     private int[] argsBufferReset = new int[] { 0, 1, 0, 0 };
+    private Matrix4x4 oldToWorldMatrix;
 
-    private void OnEnable() {
+    public void OnEnable() {
+      if (sourceMesh == default) return;
         Debug.Assert(grassComputeShader != null, "The grass compute shader is null", gameObject);
         Debug.Assert(material != null, "The material is null", gameObject);
 
@@ -175,6 +177,9 @@ public class ProceduralGrassRenderer : MonoBehaviour {
         instantiatedGrassComputeShader.SetFloat("_WindAmplitude", grassSettings.windAmplitude);
         instantiatedGrassComputeShader.SetVector("_CameraLOD",
             new Vector4(grassSettings.cameraLODMin, grassSettings.cameraLODMax, Mathf.Max(0, grassSettings.cameraLODFactor), 0));
+
+        // for moving grass we need to specify a seed, probably
+        instantiatedGrassComputeShader.SetFloat("_Seed", Random.value);
 
         instantiatedMaterial.SetBuffer("_DrawTriangles", drawBuffer);
 
@@ -245,7 +250,9 @@ public class ProceduralGrassRenderer : MonoBehaviour {
         Bounds bounds = TransformBounds(localBounds);
 
         // Update the shader with frame specific data
+        // instantiatedGrassComputeShader.SetVector("_Time", new Vector4(0, Time.timeSinceLevelLoad, 0, 0));
         instantiatedGrassComputeShader.SetVector("_Time", new Vector4(0, Time.timeSinceLevelLoad, 0, 0));
+        // instantiatedGrassComputeShader.SetMatrix("_LocalToWorld", oldToWorldMatrix);
         instantiatedGrassComputeShader.SetMatrix("_LocalToWorld", transform.localToWorldMatrix);
         instantiatedGrassComputeShader.SetVector("_CameraPosition", Camera.main.transform.position);
 

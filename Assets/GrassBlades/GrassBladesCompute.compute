@@ -81,6 +81,7 @@ float _WindTimeMult;
 float _WindTexMult;
 float _WindPosMult;
 float _WindAmplitude;
+float _Seed; // for randomization, makes more sense than using world position
 // Camera and LOD values
 float3 _CameraLOD;
 float4 _CameraPosition;
@@ -98,7 +99,8 @@ int GetNumSegments(float3 positionWS) {
 
     // Return the number of segments, but ensure there's at least 1 and at most
     // the maximum supported by the shader
-    return min(MAX_BLADE_SEGMENTS, max(1, ceil(d * _MaxBladeSegments)));
+    // return min(MAX_BLADE_SEGMENTS, max(1, ceil(d * _MaxBladeSegments)));
+    return MAX_BLADE_SEGMENTS;
 }
 
 void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c, out float3 positionWS, out float3 normalWS, out float3x3 tsToWs) {
@@ -114,16 +116,18 @@ void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c, out float
 }
 
 float2 GetBladeDimensions(float3 positionWS) {
-    // Calculate the blade width and height, applying random variance
-    float width = randNegative1to1(positionWS, 0) * _BladeWidthVariance + _BladeWidth;
-    float height = randNegative1to1(positionWS, 1) * _BladeHeightVariance + _BladeHeight;
+    // Calculate the blade width and height, applying random variance ("random")
+    float width = randNegative1to1(_Seed, 0) * _BladeWidthVariance + _BladeWidth;
+    float height = randNegative1to1(_Seed, 1) * _BladeHeightVariance + _BladeHeight;
     return float2(width, height);
 }
 
 float3 GetWindAxis(float3 positionWS, float3 normalWS) {
     // Calculate the wind axis which also encodes the wind strength
-    // The windUV is affected by the position's XZ world position and the time since scene load (_Time.y)
-    float2 windUV = positionWS.xz * _WindPosMult + _Time.y * _WindTimeMult;
+    // The windUV is affected by the position's XZ world position and the time since scene load (ddd.y)
+    float2 offset = float2(rand(_Seed),rand(_Seed));
+    // float2 windUV = positionWS.xz * _WindPosMult + _Time.y * _WindTimeMult;
+    float2 windUV = offset.xy * _WindPosMult + _Time.y * _WindTimeMult;
     windUV = windUV * _WindTexMult;
     // Sample the wind noise texture and remap to range between -1 and 1
     float2 windNoise = SAMPLE_TEXTURE2D_LOD(_WindNoiseTexture, sampler_WindNoiseTexture, windUV, 0).xy * 2 - 1;
@@ -182,9 +186,9 @@ void Main(uint3 id : SV_DispatchThreadID) {
     float2 dimensions = GetBladeDimensions(positionWS);
 
     // The twist matrix decides which direction the grass blade will face
-    float3x3 twistMatrix = AngleAxis3x3(rand(positionWS, 2) * PI * 2, float3(0, 0, 1));
+    float3x3 twistMatrix = AngleAxis3x3(rand(_Seed, 2) * PI * 2, float3(0, 0, 1));
     // This bend angle decides how much the tip bends towards 90 degrees
-    float maxBend = rand(positionWS, 3) * PI * 0.5f * _MaxBendAngle;
+    float maxBend = rand(_Seed, 3) * PI * 0.5f * _MaxBendAngle;
 
     float3 windAxis = GetWindAxis(positionWS, normalWS);
 
