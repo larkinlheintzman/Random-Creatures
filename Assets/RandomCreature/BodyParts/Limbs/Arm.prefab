@@ -212,14 +212,12 @@ MonoBehaviour:
   stepRadius: 1.56
   limbLength: 1.78
   supportHeight: 0
-  groundOffset: 0.05
   support: 1
   supportScaler: 0
+  supportAngle: 20
+  velocityPositionScaler: 0
   twitchScale: 0.25
   twitchRandomScale: 0.1
-  generatorNearFlag: 0
-  playerNearFlag: 0
-  drawRaycasts: 0
   pointNumber: 100
   layerMask:
     serializedVersion: 2
@@ -229,10 +227,15 @@ MonoBehaviour:
   positionSmoothTime: 0.1
   rotationSmoothSpeed: 0.01
   smoothTargetDistanceScale: 5
+  energyConsumption: 0
+  supportEnergyScaler: 0.01
   boneColliders: []
+  generatorNearFlag: 0
+  playerNearFlag: 0
+  drawRaycasts: 0
   initialized: 1
   id: 0
-  ik: {fileID: 0}
+  sceneIndex: -1
   damage: 0
   target: {fileID: 0}
   smoothTarget: {fileID: 0}
@@ -244,7 +247,6 @@ MonoBehaviour:
   playerManager: {fileID: 0}
   traj: {fileID: 0}
   index: 0
-  sceneIndex: -1
   repeatPeriod: 0.1
 --- !u!114 &219395204555540735
 MonoBehaviour:

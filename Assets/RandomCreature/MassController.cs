@@ -24,18 +24,19 @@ public class MassController : MonoBehaviour
   public Quaternion desiredLookRotation = Quaternion.Euler(0f,0f,0f);
   public float accelerationTilt = 100.0f;
 
-
   public bool mouseRotationMode = false;
 
   public float standingHeight = 2.0f;
   public float rbDrag;
   public float rbMass;
 
-  public float ctrlFrequency = 3f;
+  public float ctrlFrequency = 1f;
   public float ctrlDamping = 1f;
   public float torqueFrequency = 3f;
   public float torqueDamping = 1f;
   public float swingTurnMult = 1f;
+  [Range(0f,1f)]
+  public float restoringForce = 0.1f;
   private float groundSpeed;
   private float maxGroundDistance = 20.0f;
   private float distanceToGround = 0.0f;
@@ -229,7 +230,17 @@ public class MassController : MonoBehaviour
       float g = 1 / (1 + kd * dt + kp * dt * dt);
       float ksg = kp * g;
       float kdg = (kd + kp * dt) * g;
-      Vector3 Pdes = rb.position + localUp*(generator.limbSupport - standingHeight);
+      // Vector3 Pdes = rb.position + localUp*(generator.limbSupport - standingHeight);
+      Vector3 Pdes = Vector3.zero;
+      if (generator.limbSupportAnchor.sqrMagnitude != 0.0f)
+      {
+        Pdes = rb.position + generator.limbSupportDirection*(standingHeight);
+      }
+      else
+      {
+        Pdes = rb.position + generator.limbSupportDirection*(generator.limbSupport - standingHeight); // not touching anything?
+        // Pdes = rb.position;
+      }
       Vector3 Vdes = Vector3.zero;
       Vector3 Pt0 = rb.position;
       Vector3 Vt0 = rb.velocity;
@@ -240,8 +251,12 @@ public class MassController : MonoBehaviour
       if (Vector3.Dot(F, transform.up) > 0f)
       {
         Vector3 Fp = Vector3.Project(F, transform.up);
-        rb.AddForce(Fp);
+        rb.AddForce(Vector3.Lerp(Fp, F, restoringForce));
       }
+
+    }
+    else
+    {
 
     }
 

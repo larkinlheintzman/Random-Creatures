@@ -20,6 +20,8 @@ public class CreatureGenerator : MonoBehaviour
   public bool isGrounded = true; // depends on limbs and such...
   public bool built = false; // whether body is built yet
   public float limbSupport = 0.0f;
+  public Vector3 limbSupportDirection = Vector3.zero;
+  public Vector3 limbSupportAnchor = Vector3.zero;
 
   [HideInInspector]
   public List<AttachPoint> currentAttachPoints;
@@ -518,12 +520,21 @@ public class CreatureGenerator : MonoBehaviour
     // update body attach points
     isGrounded = false;
     limbSupport = 0.0f;
+    limbSupportDirection = Vector3.zero;
+    limbSupportAnchor = Vector3.zero;
     float totalConsumption = 0.0f;
     for (int i=0; i < equippedLimbs.Count; i++)
     {
       // equippedLimbs
       equippedLimbs[i].transform.GetChild(0).transform.position = equippedBody.transform.position + equippedBody.transform.TransformVector(attachPointOffsets[equippedLimbs[i].id]);
-      limbSupport += equippedLimbs[i].support;
+      limbSupport += equippedLimbs[i].pos.support;
+      // limbSupportDirection += equippedLimbs[i].pos.groundNormal*(equippedLimbs[i].pos.support);
+      limbSupportDirection += equippedLimbs[i].pos.groundNormal;
+      if (equippedLimbs[i].pos.isGrounded)
+      {
+        limbSupportAnchor += equippedLimbs[i].pos.worldPosition;
+      }
+      // equippedLimbs[i].supportScaler*(equippedLimbs[i].supportHeight - currentMinDistance);
 
       // check if equippedLimbIds still match
       if (equippedLimbIds[i] != equippedLimbs[i].index)
@@ -536,6 +547,10 @@ public class CreatureGenerator : MonoBehaviour
       totalConsumption += equippedLimbs[i].energyConsumption;
 
     }
+    Debug.DrawLine(transform.position, transform.position + limbSupportDirection*2f, Color.red, Time.deltaTime);
+    limbSupportDirection = limbSupportDirection.normalized;
+    limbSupportAnchor = limbSupportAnchor/equippedLimbs.Count;
+
     // subtract consumption this frame from the total energy
     energy.Consume(totalConsumption);
 

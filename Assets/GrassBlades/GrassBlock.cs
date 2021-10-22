@@ -66,10 +66,10 @@ public class GrassBlock : Block
         Vector3 flatPos = new Vector3(size*(percent.x - 0.5f) + randomScaler*(Random.value - 0.5f), 0.0f, size*(percent.y - 0.5f) + randomScaler*(Random.value - 0.5f));
         // float xpos = size*(percent.x - 0.5f) + randomScaler*(Random.value - 0.5f);
         // float ypos = size*(percent.y - 0.5f) + randomScaler*(Random.value - 0.5f);
-        Debug.DrawLine(transform.position + transform.rotation*flatPos, transform.position + transform.rotation*flatPos + raycastDirection*raycastDistance*transform.up, Color.green, 0.5f);
+        // Debug.DrawLine(transform.position + transform.rotation*flatPos, transform.position + transform.rotation*flatPos + raycastDirection*raycastDistance*transform.up, Color.green, 0.5f);
         if (Physics.Raycast(transform.position + transform.rotation*(flatPos + raycastOffset*Vector3.up), raycastDirection*transform.up, out RaycastHit heet, raycastDistance, grassMask))
         {
-          Debug.DrawLine(transform.position + transform.rotation*flatPos, transform.position + transform.rotation*flatPos + raycastDirection*raycastDistance*transform.up, Color.red, 1f);
+          // Debug.DrawLine(transform.position + transform.rotation*flatPos, transform.position + transform.rotation*flatPos + raycastDirection*raycastDistance*transform.up, Color.red, 1f);
           vertices[i] = flatPos + new Vector3(0.0f, raycastDirection*(heet.distance-raycastOffset), 0.0f);
         }
         else

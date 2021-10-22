@@ -78,7 +78,7 @@ MonoBehaviour:
   - {x: -1, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}
   - {x: 0, y: 0, z: -1}
-  planetMaterial: {fileID: 2100000, guid: c1dd3ff5731cad44b997b26bb42e2131, type: 2}
+  planetMaterial: {fileID: 2100000, guid: 727cde1a5b9c4cd4d88724943a15a785, type: 2}
   resolution: 8
   size: 0.5
   meshMade: 0

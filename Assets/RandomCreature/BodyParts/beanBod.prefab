@@ -616,7 +616,7 @@ MonoBehaviour:
   positionSmoothTime: 0.023
   tiltSpeed: 0.037
   motionMass: 1
-  motionDrag: 1
+  motionDrag: 0
   bodyParticles: {fileID: 0}
   idleMoveTime: 0.1
 --- !u!1 &5204208633318468116

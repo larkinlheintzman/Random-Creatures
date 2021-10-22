@@ -350,6 +350,7 @@ public class Limb : MonoBehaviour
 
     // also add some bias to center of raycast ball, that way we can account for body speed in preferred locations
     Vector3 bias = generator.ctrl.previousVelocity*velocityPositionScaler;
+    // Vector3 bias = Vector3.zero;
 
     Vector3 currentGroundPosition = Vector3.zero;
     float currentMinDistance = Mathf.Infinity;
@@ -364,10 +365,15 @@ public class Limb : MonoBehaviour
         if (drawRaycasts) Debug.DrawLine(transform.position + bias, transform.position + bias + pointOnSphere*hitPoint.distance - 0.05f*Vector3.right, Color.white,Time.deltaTime);
         if (hitPoint.distance < currentMinDistance && Vector3.Angle(player.up, -pointOnSphere) < supportAngle)
         {
-          groundFlag = true; // found ground
-          currentGroundPosition = transform.position + bias + pointOnSphere*hitPoint.distance;
-          groundNormal = hitPoint.normal.normalized; // average normals
-          currentMinDistance = hitPoint.distance;
+          // one last check to make sure we're not inside an obstacle
+          if (!Physics.Raycast(transform.position + bias, -pointOnSphere, out RaycastHit heet, limbLength, layerMask))
+          {
+            // print("inside hit!!");
+            groundFlag = true; // found ground
+            currentGroundPosition = transform.position + bias + pointOnSphere*hitPoint.distance;
+            groundNormal = hitPoint.normal.normalized; // average normals
+            currentMinDistance = hitPoint.distance;
+          }
         }
       }
     }

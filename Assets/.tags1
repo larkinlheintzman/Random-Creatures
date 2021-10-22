@@ -4,16 +4,21 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-PlayerManager	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^public class PlayerManager : NetworkBehaviour$/;"	class	line:7
-player	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public Transform player;$/;"	field	line:10	class:PlayerManager
-playerCamera	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public Camera playerCamera;$/;"	field	line:11	class:PlayerManager
-particleContainer	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public ParticleContainer particleContainer;$/;"	field	line:12	class:PlayerManager
-inputManager	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public InputManager inputManager;$/;"	field	line:13	class:PlayerManager
-networkTransform	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public NetworkTransformChild networkTransform;$/;"	field	line:14	class:PlayerManager
-initialized	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public bool initialized = false;$/;"	field	line:15	class:PlayerManager
-playerId	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public int playerId = 0;$/;"	field	line:16	class:PlayerManager
-playerList	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public List<PlayerManager> playerList = new List<PlayerManager>();$/;"	field	line:17	class:PlayerManager
-Initialize	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void Initialize()$/;"	method	line:19	class:PlayerManager	signature:()
-UpdateClientList	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void UpdateClientList(List<PlayerManager> plerList)$/;"	method	line:64	class:PlayerManager	signature:(List<PlayerManager> plerList)
-UpdateClients	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public void UpdateClients()$/;"	method	line:70	class:PlayerManager	signature:()
-OnStartClient	C:\Users\Larkin\Random Creatures\Assets\PlayerManager.cs	/^  public override void OnStartClient()$/;"	method	line:94	class:PlayerManager	signature:()
+GrassBlock	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^public class GrassBlock : Block$/;"	class	line:6
+resolution	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public int resolution = 100;$/;"	field	line:9	class:GrassBlock
+size	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public float size = 10.0f;$/;"	field	line:10	class:GrassBlock
+randomScaler	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public float randomScaler = 2f;$/;"	field	line:11	class:GrassBlock
+raycastDistance	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public float raycastDistance = 10f;$/;"	field	line:12	class:GrassBlock
+raycastOffset	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public float raycastOffset = 5f;$/;"	field	line:13	class:GrassBlock
+raycastDirection	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public int raycastDirection = 1;$/;"	field	line:15	class:GrassBlock
+groundOffset	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public float groundOffset = 2f;$/;"	field	line:16	class:GrassBlock
+grassRenderer	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public ProceduralGrassRenderer grassRenderer;$/;"	field	line:17	class:GrassBlock
+meshFilter	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public MeshFilter meshFilter;$/;"	field	line:18	class:GrassBlock
+mesh	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public Mesh mesh;$/;"	field	line:19	class:GrassBlock
+grassMask	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public LayerMask grassMask;$/;"	field	line:20	class:GrassBlock
+grassChecked	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public bool grassChecked = false;$/;"	field	line:21	class:GrassBlock
+Initialize	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public override void Initialize(CityStarGenerator generator, int genDepth, Vector3 localScale)$/;"	method	line:23	class:GrassBlock	signature:(CityStarGenerator generator, int genDepth, Vector3 localScale)
+gimmieFrames	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public int gimmieFrames = 10;$/;"	field	line:33	class:GrassBlock
+gimmieCounter	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public int gimmieCounter = 0;$/;"	field	line:34	class:GrassBlock
+LateUpdate	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public void LateUpdate()$/;"	method	line:35	class:GrassBlock	signature:()
+GenerateMesh	C:\Users\Larkin\Random Creatures\Assets\GrassBlades\GrassBlock.cs	/^  public void GenerateMesh()$/;"	method	line:50	class:GrassBlock	signature:()

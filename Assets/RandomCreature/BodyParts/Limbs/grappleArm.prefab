@@ -266,7 +266,7 @@ MonoBehaviour:
   limbLength: 0.81
   supportHeight: 0.5
   support: 1
-  supportScaler: 2
+  supportScaler: 1
   supportAngle: 180
   velocityPositionScaler: 0
   twitchScale: 0.25
@@ -288,7 +288,7 @@ MonoBehaviour:
   - {fileID: 7553184830504008170}
   generatorNearFlag: 0
   playerNearFlag: 0
-  drawRaycasts: 1
+  drawRaycasts: 0
   initialized: 0
   id: 0
   sceneIndex: -1

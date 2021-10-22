@@ -461,7 +461,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -836, y: 645}
+  m_AnchoredPosition: {x: -1170.2001, y: 716.2}
   m_SizeDelta: {x: 365.8, y: 41.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6032623925301577656
@@ -1721,6 +1721,7 @@ MonoBehaviour:
   isGrounded: 1
   built: 0
   limbSupport: 0
+  limbSupportDirection: {x: 0, y: 0, z: 0}
   currentAttachPoints: []
   attachPointOffsets: []
   rb: {fileID: 0}
@@ -1851,7 +1852,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -833.80005, y: 544.8}
+  m_AnchoredPosition: {x: -1168, y: 616}
   m_SizeDelta: {x: 365.8, y: 41.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3855026222040504139

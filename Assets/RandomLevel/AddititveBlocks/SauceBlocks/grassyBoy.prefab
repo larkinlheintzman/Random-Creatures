@@ -55,7 +55,7 @@ MonoBehaviour:
   resolution: 100
   size: 20
   randomScaler: 20
-  raycastDistance: 30
+  raycastDistance: 1000
   raycastOffset: 0
   raycastDirection: -1
   groundOffset: 2
