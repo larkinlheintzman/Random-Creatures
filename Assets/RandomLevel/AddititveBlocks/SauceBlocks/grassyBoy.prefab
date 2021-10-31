@@ -52,9 +52,9 @@ MonoBehaviour:
   randomScale: 0
   additionSpots: []
   generator: {fileID: 0}
-  resolution: 100
-  size: 20
-  randomScaler: 20
+  resolution: 50
+  size: 10
+  randomScaler: 15
   raycastDistance: 1000
   raycastOffset: 0
   raycastDirection: -1

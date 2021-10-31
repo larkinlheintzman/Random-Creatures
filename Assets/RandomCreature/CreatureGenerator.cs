@@ -58,50 +58,6 @@ public class CreatureGenerator : MonoBehaviour
   private List<BoneCollider> limbColliders = new List<BoneCollider>();
   private CapsuleCollider bodyCollider;
 
-  // public int[] RandomizeCreature()
-  // {
-  //   // do initial set up
-  //   health = gameObject.AddComponent<Health>();
-  //   health.Initialize(this, healthBar);
-  //
-  //   if (isPlayer)
-  //   {
-  //     orbitCam = cameraTransform.gameObject.GetComponent<OrbitCamera>();
-  //     playerManager = transform.parent.gameObject.GetComponent<PlayerManager>();
-  //   }
-  //   else
-  //   {
-  //     // do equivalant enemy manager! has particles/inputs/ so on
-  //     playerManager = gameObject.GetComponent<EnemyManager>();
-  //   }
-  //
-  //
-  //   // build from scratch
-  //   equippedBody = AddBody(transform);
-  //   GetAttachPoints(equippedBody);
-  //   ConfigurePhysics(equippedBody);
-  //
-  //   // if (isPlayer) {
-  //   // } else {
-  //   //   ConfigureEnemyPhysics(equippedBody);
-  //   // }
-  //
-  //   // select limb indexes from pool
-  //   int[] tempLimbIds = new int[currentAttachPoints.Count];
-  //   equippedLimbIds = new int[currentAttachPoints.Count];
-  //   for (int i = 0; i < currentAttachPoints.Count; i++) {
-  //     tempLimbIds[i] = Random.Range(0, limbs.Length);
-  //     print($"new limb id rolled: {tempLimbIds[i]}");
-  //   }
-  //   equippedLimbIds = tempLimbIds;
-  //   SetLimbIds(equippedLimbIds);
-  //   playerManager.refreshLimbs = true;
-  //
-  //   GetLimbColliders(); // get independent bone colliders
-  //   built = true;
-  //   return equippedLimbIds;
-  // }
-
   public int[] RandomizeCreature()
   {
     // build from ids but w random ids
@@ -522,24 +478,25 @@ public class CreatureGenerator : MonoBehaviour
     limbSupport = 0.0f;
     limbSupportDirection = Vector3.zero;
     limbSupportAnchor = Vector3.zero;
+    // fuck all that just figure out what point to hit, centroid bb
+
     float totalConsumption = 0.0f;
+    int groundedLimbs = 0;
     for (int i=0; i < equippedLimbs.Count; i++)
     {
       // equippedLimbs
       equippedLimbs[i].transform.GetChild(0).transform.position = equippedBody.transform.position + equippedBody.transform.TransformVector(attachPointOffsets[equippedLimbs[i].id]);
       limbSupport += equippedLimbs[i].pos.support;
-      // limbSupportDirection += equippedLimbs[i].pos.groundNormal*(equippedLimbs[i].pos.support);
-      limbSupportDirection += equippedLimbs[i].pos.groundNormal;
       if (equippedLimbs[i].pos.isGrounded)
       {
-        limbSupportAnchor += equippedLimbs[i].pos.worldPosition;
+        limbSupportAnchor += equippedLimbs[i].target.position + equippedLimbs[i].supportHeight*equippedLimbs[i].pos.groundNormal;
+        limbSupportDirection += equippedLimbs[i].pos.groundNormal;
+        groundedLimbs += 1;
       }
-      // equippedLimbs[i].supportScaler*(equippedLimbs[i].supportHeight - currentMinDistance);
 
       // check if equippedLimbIds still match
       if (equippedLimbIds[i] != equippedLimbs[i].index)
       {
-        // equippedLimbIds[i] = equippedLimbs[i].indexs
         playerManager.refreshLimbs = true;
       }
 
@@ -548,8 +505,8 @@ public class CreatureGenerator : MonoBehaviour
 
     }
     Debug.DrawLine(transform.position, transform.position + limbSupportDirection*2f, Color.red, Time.deltaTime);
-    limbSupportDirection = limbSupportDirection.normalized;
-    limbSupportAnchor = limbSupportAnchor/equippedLimbs.Count;
+    limbSupportDirection = (limbSupportDirection/groundedLimbs).normalized;
+    limbSupportAnchor = limbSupportAnchor/groundedLimbs;
 
     // subtract consumption this frame from the total energy
     energy.Consume(totalConsumption);
@@ -770,6 +727,14 @@ public class CreatureGenerator : MonoBehaviour
     {
       bodyParticles.Stop();
       bodyParticles.gameObject.transform.localPosition = Vector3.zero;
+    }
+  }
+
+  public void OnDrawGizmos()
+  {
+    if (isGrounded)
+    {
+      Gizmos.DrawIcon(limbSupportAnchor, "Light Gizmo.tiff", false);
     }
   }
 

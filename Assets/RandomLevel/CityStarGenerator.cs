@@ -191,6 +191,8 @@ public class CityStarGenerator : MonoBehaviour
     return val*(Mathf.Pow(xWeight*yWeight, distanceNoisePower));
   }
 
+  public float pixelPhase = 1.0f;
+
   public void GenerateCity()
   {
     ResetBlocks();
@@ -224,8 +226,8 @@ public class CityStarGenerator : MonoBehaviour
       float noiseValue = shapeGenerator.CalculateNoise(pointOnUnitSphere);
 
       // do better sphere mapping later
-      int xpix = (int)(Mathf.Abs(Mathf.Cos(pointOnUnitSphere.x*2f*Mathf.PI))*pixelScale);
-      int ypix = (int)(Mathf.Abs(Mathf.Sin(pointOnUnitSphere.y*2f*Mathf.PI))*pixelScale);
+      int xpix = (int)(Mathf.Abs(Mathf.Cos(pointOnUnitSphere.x*2f*Mathf.PI*pixelPhase))*pixelScale);
+      int ypix = (int)(Mathf.Abs(Mathf.Sin(pointOnUnitSphere.y*2f*Mathf.PI*pixelPhase))*pixelScale);
       float generationVal = genTexture.GetPixel(xpix, ypix).grayscale;
       Color colorDir = dirTexture.GetPixel(xpix, ypix); // direction stored in red channel
       float dir = colorDir.r;

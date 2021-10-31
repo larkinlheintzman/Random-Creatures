@@ -21,42 +21,40 @@ public class MassController : MonoBehaviour
   public Vector3 swingDirection = Vector3.zero;
   public Vector3 previousForward = Vector3.zero;
   public Vector3 localUp = Vector3.up;
+  public Vector3 localDown = Vector3.down; // planet side
   public Quaternion desiredLookRotation = Quaternion.Euler(0f,0f,0f);
   public float accelerationTilt = 100.0f;
 
   public bool mouseRotationMode = false;
 
-  public float standingHeight = 2.0f;
   public float rbDrag;
   public float rbMass;
 
-  public float ctrlFrequency = 1f;
+  public float ctrlFrequency = 3f;
   public float ctrlDamping = 1f;
   public float torqueFrequency = 3f;
   public float torqueDamping = 1f;
   public float swingTurnMult = 1f;
   [Range(0f,1f)]
-  public float restoringForce = 0.1f;
-  private float groundSpeed;
-  private float maxGroundDistance = 20.0f;
-  private float distanceToGround = 0.0f;
+  public float restoringForce = 1.0f;
   private Vector3 lastMappedMoveLook = Vector3.zero;
+  private Vector3 lastMoveInput = Vector3.zero;
 
   // bools to keep track
-  bool isJumping = false;
-  float jumpDelayCount = 20.0f; // maximum possible jump charge
-  float jumpDelayBase = 5.0f; // base jump delay
-  float jumpDelayCounter = 0.0f; // counter for delay
+  public float jumpDelayCount = 10.0f; // maximum possible jump charge
+  public float jumpDelayCounter = 0.0f; // counter for delay
 
-  public float playerSpeedMult = 20.0f;
-  public float playerAirSpeedMult = 1.0f;
-  public float playerRunMult = 1.5f;
-  public float playerRotationSpeed = 0.1f;
+  public float playerSpeedMult = 1.8f;
+  public float playerAirSpeedMult = 1.1f;
+  public float playerRunMult = 2.5f;
   public float playerJumpSpeed = 20.0f;
   public float groundedMaxDistance = 1.05f; // set more better
-  public float rotationSpeed = 0.2f;
+  public float rotationSpeed = 0.3f;
+  [Header("jumping params")]
+  public Vector3 jumpBias = Vector3.zero;
+  public float jumpCrouchScaler = 0.07f;
+  public float jumpHeightScaler = 0.25f;
 
-  [HideInInspector]
   private int layerMask;
 
   private void Awake()
@@ -77,49 +75,65 @@ public class MassController : MonoBehaviour
     generator = gen;
     layerMask = gen.layerMask;
 
-    isJumping = false;
     initalized = true;
     playerManager = gen.playerManager;
   }
 
-  void ApplyCurrentInput()
+  Vector3 GetCurrentInput()
   {
     // applies forces from player input
     if (generator.isGrounded)
     {
+      Vector3 mappedInput = MapToInputSpace(playerManager.inputManager.movementInput);
       if (playerManager.inputManager.runPressed)
       {
-        rb.AddForce(playerSpeedMult * playerRunMult * MapToInputSpace(playerManager.inputManager.movementInput));
+        // return playerSpeedMult * playerRunMult * MapToInputSpace(playerManager.inputManager.movementInput);
+        Debug.DrawLine(transform.position, transform.position + playerSpeedMult * playerRunMult * Vector3.ProjectOnPlane(mappedInput, generator.limbSupportDirection), Color.cyan, Time.deltaTime);
+        return playerSpeedMult * playerRunMult * Vector3.ProjectOnPlane(mappedInput, generator.limbSupportDirection).normalized;
       }
       else
       {
-        rb.AddForce(playerSpeedMult * MapToInputSpace(playerManager.inputManager.movementInput));
+        // return playerSpeedMult * MapToInputSpace(playerManager.inputManager.movementInput);
+        Debug.DrawLine(transform.position, transform.position + playerSpeedMult * Vector3.ProjectOnPlane(mappedInput, generator.limbSupportDirection), Color.cyan, Time.deltaTime);
+        return playerSpeedMult * Vector3.ProjectOnPlane(mappedInput, generator.limbSupportDirection).normalized;
       }
     }
-    else {
-      rb.AddForce(playerSpeedMult * playerAirSpeedMult * MapToInputSpace(playerManager.inputManager.movementInput));
+    else
+    {
+      // is no move when no ground
+      return Vector3.zero;
     }
   }
 
-  void UpdateDistanceToGround()
-  {
-    distanceToGround = maxGroundDistance;
-    RaycastHit hit = new RaycastHit();
-    if (Physics.Raycast (transform.position, -localUp, out hit, 1000f, layerMask)) {
-      distanceToGround = Mathf.Min(hit.distance, maxGroundDistance);
-    }
-  }
+  // void UpdateDistanceToGround()
+  // {
+  //   distanceToGround = maxGroundDistance;
+  //   RaycastHit hit = new RaycastHit();
+  //   if (Physics.Raycast (transform.position, -localUp, out hit, 1000f, layerMask)) {
+  //     distanceToGround = Mathf.Min(hit.distance, maxGroundDistance);
+  //   }
+  // }
 
+  public float upRotationSpeed = 0.02f;
   void UpdateTorques()
   {
 
     if(generator.isPlayer && !playerManager.inputManager.isSliding)
     {
 
+      // set up local up
+      if (generator.limbSupportDirection.sqrMagnitude != 0.0f)
+      {
+        Vector3 tempUp = generator.limbSupportDirection;
+        localUp = Vector3.Lerp(localUp, tempUp, upRotationSpeed);
+      }
+      else if (localUp.sqrMagnitude == 0.0f) localUp = transform.up;
+
       if (!mouseRotationMode)
       {
         if (playerManager.inputManager.movementInput.sqrMagnitude != 0)
         {
+          lastMoveInput = playerManager.inputManager.movementInput;
           lastMappedMoveLook = MapToInputSpace(playerManager.inputManager.movementInput);
           Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, localUp);
           Quaternion lerpedLookRotation = Quaternion.Lerp(transform.rotation, moveLookRotation, rotationSpeed);
@@ -127,6 +141,7 @@ public class MassController : MonoBehaviour
         }
         else
         {
+          lastMappedMoveLook = MapToInputSpace(lastMoveInput);
           Quaternion moveLookRotation = Quaternion.LookRotation(lastMappedMoveLook, localUp); // look in last direction if no inputs
           desiredLookRotation = moveLookRotation;
         }
@@ -230,16 +245,21 @@ public class MassController : MonoBehaviour
       float g = 1 / (1 + kd * dt + kp * dt * dt);
       float ksg = kp * g;
       float kdg = (kd + kp * dt) * g;
-      // Vector3 Pdes = rb.position + localUp*(generator.limbSupport - standingHeight);
       Vector3 Pdes = Vector3.zero;
       if (generator.limbSupportAnchor.sqrMagnitude != 0.0f)
       {
-        Pdes = rb.position + generator.limbSupportDirection*(standingHeight);
+        Pdes = generator.limbSupportAnchor;
       }
       else
       {
-        Pdes = rb.position + generator.limbSupportDirection*(generator.limbSupport - standingHeight); // not touching anything?
-        // Pdes = rb.position;
+        Pdes = rb.position; // not touching anything?
+      }
+
+      if (generator.isPlayer)
+      {
+        // move the destination if we're a player
+        Pdes += GetCurrentInput();
+        Pdes += jumpBias;
       }
       Vector3 Vdes = Vector3.zero;
       Vector3 Pt0 = rb.position;
@@ -248,15 +268,8 @@ public class MassController : MonoBehaviour
       // need to apply force ONLY in localUp direction not side ta side and not down
       // dont apply if not in same dir as up
       // no WAY that comes to bite my ass
-      if (Vector3.Dot(F, transform.up) > 0f)
-      {
-        Vector3 Fp = Vector3.Project(F, transform.up);
-        rb.AddForce(Vector3.Lerp(Fp, F, restoringForce));
-      }
-
-    }
-    else
-    {
+      Vector3 Fp = Vector3.Project(F, transform.up);
+      rb.AddForce(Vector3.Lerp(Fp, F, restoringForce));
 
     }
 
@@ -276,13 +289,11 @@ public class MassController : MonoBehaviour
   {
     if (initalized)
     {
-      UpdateDistanceToGround();
-      UpdateGravity();
       UpdateTorques();
+      UpdateGravity();
     }
     if (generator.isPlayer)
     {
-      ApplyCurrentInput();
       HandleJumpMotion();
       if (playerManager.inputManager.aiming)
       {
@@ -302,46 +313,22 @@ public class MassController : MonoBehaviour
   void HandleJumpMotion()
   {
     // update counts for delays
-    if (isJumping && jumpDelayCounter > jumpDelayBase)
+    if (jumpDelayCounter < jumpDelayCount && playerManager.inputManager.jumpPressed)
     {
-
-      // jumpVelocity = new Vector3(0.0f, (((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed), 0.0f);
-      jumpVelocity = localUp*(((jumpDelayCount - jumpDelayCounter) / (jumpDelayCount)) * playerJumpSpeed);
-      if (playerManager.inputManager.jumpPressed) // still holding button
-      {
-        jumpDelayCounter -= 1; // count down to lift off
-      }
-      else // let go of button
-      {
-        jumpDelayCounter = jumpDelayBase; // skip to end of charge phase
-      }
-
+      jumpDelayCounter += 1;
+      jumpBias += (-jumpCrouchScaler*generator.limbSupportDirection);
     }
-    else if (isJumping)// in base delay
+    else if (!playerManager.inputManager.jumpPressed && jumpDelayCounter > 0 && generator.isGrounded)
     {
+      // we ride
       jumpDelayCounter -= 1;
+      jumpBias += jumpHeightScaler*transform.up;
 
-      if (jumpDelayCounter == 0 && generator.isGrounded)
-      {
-
-        rb.velocity += jumpVelocity;
-        // print("jump fired: " + jumpVelocity);
-        isJumping = false; // we have jumped
-
-      }
-      else if (jumpDelayCounter <= 0)
-      {
-        jumpDelayCounter = 0;
-        isJumping = false; // we could not jump
-      }
     }
-
-    if (playerManager.inputManager.jumpPressed && generator.isGrounded && !isJumping && generator.energy.hasGas)
+    else if (!generator.isGrounded)
     {
-      // Handle jump motion
-      isJumping = true;
-      jumpDelayCounter = jumpDelayCount;
-      // print("jump requested");
+      jumpBias = Vector3.zero;
+      jumpDelayCounter = 0;
     }
   }
 
@@ -352,19 +339,13 @@ public class MassController : MonoBehaviour
 
       Vector3 forward = generator.cameraTransform.forward - localUp * Vector3.Dot(generator.cameraTransform.forward, localUp);
       Vector3 right = Vector3.Cross(forward.normalized, localUp).normalized;
-      // Vector3 right = generator.cameraTransform.right - localUp * Vector3.Dot(generator.cameraTransform.right, localUp);
-      // Debug.DrawLine(transform.position, transform.position + 2f*right, Color.red, 0.1f);
-      // Debug.DrawLine(transform.position, transform.position + 2f*forward, Color.blue, 0.1f);
       desiredVelocity = (-worldInput.x*right + worldInput.z*forward);
     }
     else
     {
       desiredVelocity = worldInput;
     }
-    // Debug.DrawLine(transform.position, transform.position + 4f*worldInput, Color.green, 0.1f);
-    // Debug.DrawLine(transform.position, transform.position + 5f*desiredVelocity, Color.white, 0.1f);
     return desiredVelocity;
   }
-
 
 }

@@ -353,6 +353,7 @@ public class Limb : MonoBehaviour
     // Vector3 bias = Vector3.zero;
 
     Vector3 currentGroundPosition = Vector3.zero;
+    Transform hitTransform = null;
     float currentMinDistance = Mathf.Infinity;
 
     // this might be directional
@@ -363,7 +364,7 @@ public class Limb : MonoBehaviour
       if (Physics.Raycast(transform.position + bias, pointOnSphere, out hitPoint, limbLength, layerMask))
       {
         if (drawRaycasts) Debug.DrawLine(transform.position + bias, transform.position + bias + pointOnSphere*hitPoint.distance - 0.05f*Vector3.right, Color.white,Time.deltaTime);
-        if (hitPoint.distance < currentMinDistance && Vector3.Angle(player.up, -pointOnSphere) < supportAngle)
+        if (hitPoint.distance < currentMinDistance && Vector3.Angle(-generator.ctrl.localDown, hitPoint.normal.normalized) < supportAngle)
         {
           // one last check to make sure we're not inside an obstacle
           if (!Physics.Raycast(transform.position + bias, -pointOnSphere, out RaycastHit heet, limbLength, layerMask))
@@ -373,6 +374,8 @@ public class Limb : MonoBehaviour
             currentGroundPosition = transform.position + bias + pointOnSphere*hitPoint.distance;
             groundNormal = hitPoint.normal.normalized; // average normals
             currentMinDistance = hitPoint.distance;
+            hitTransform = hitPoint.transform;
+            target.parent = hitTransform;
           }
         }
       }
@@ -393,7 +396,8 @@ public class Limb : MonoBehaviour
     outputPosition.isGrounded = false;
     outputPosition.groundNormal = groundNormal; // no normal in air!
     outputPosition.support = 0; // no support neither
-
+    target.parent = null;
+    // DontDestroyOnLoad(target);
     return outputPosition;
   }
 

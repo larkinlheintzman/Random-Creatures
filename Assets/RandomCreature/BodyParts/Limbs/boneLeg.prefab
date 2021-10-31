@@ -250,16 +250,16 @@ MonoBehaviour:
   pole: {fileID: 1776747999116061371}
   idleTarget: {fileID: 6057449976169387921}
   infoText: {fileID: 6336678912458821004, guid: 608e4b6ab13af474e9aa262282509733, type: 3}
-  stepRadius: 1.28
-  limbLength: 1.29
-  supportHeight: 2
+  stepRadius: 1.5
+  limbLength: 1.2
+  supportHeight: 1.45
   support: 1.1064954
   supportScaler: 1
-  supportAngle: 20
+  supportAngle: 30
   velocityPositionScaler: 0
   twitchScale: 0.25
   twitchRandomScale: 0.1
-  pointNumber: 100
+  pointNumber: 50
   layerMask:
     serializedVersion: 2
     m_Bits: 51

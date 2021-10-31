@@ -8,9 +8,8 @@ public class GravityWell : MonoBehaviour
   public float range = 500.0f;
   [Range(0f, 1f)]
   public float G = 1f;
-  private float rotationSpeed = 0.005f;
 
-  public void Update()
+  public void FixedUpdate()
   {
     Rigidbody[] masses = FindObjectsOfType<Rigidbody>();
     GravityWell[] wells = FindObjectsOfType<GravityWell>();
@@ -44,7 +43,8 @@ public class GravityWell : MonoBehaviour
         MassController tmpCtrl = m.gameObject.GetComponent<MassController>();
         if (tmpCtrl != null)
         {
-          tmpCtrl.localUp = Vector3.Lerp(tmpCtrl.localUp, closestOffset.normalized, rotationSpeed);
+          // testing something!
+          tmpCtrl.localDown = (transform.position - tmpCtrl.transform.position).normalized;
         }
       }
     }

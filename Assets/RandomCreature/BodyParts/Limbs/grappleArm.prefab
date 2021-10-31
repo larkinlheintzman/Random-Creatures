@@ -263,11 +263,11 @@ MonoBehaviour:
   idleTarget: {fileID: 6057449976169387921}
   infoText: {fileID: 6336678912458821004, guid: 608e4b6ab13af474e9aa262282509733, type: 3}
   stepRadius: 1.5
-  limbLength: 0.81
-  supportHeight: 0.5
-  support: 1
+  limbLength: 1.12
+  supportHeight: 0.47
+  support: 0
   supportScaler: 1
-  supportAngle: 180
+  supportAngle: 30
   velocityPositionScaler: 0
   twitchScale: 0.25
   twitchRandomScale: 0.1

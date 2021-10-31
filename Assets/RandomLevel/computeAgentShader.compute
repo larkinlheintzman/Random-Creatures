@@ -1,0 +1,292 @@
+#pragma kernel main
+
+
+struct Agent {
+  float heading;
+  float2 position;
+  float bodySize;
+  float cooldown;
+  float cooldownCounter;
+  float sensingAngle;
+  float senseWeight;
+  float sensingDist;
+  float senseSize;
+  float senseThreshold;
+  float4 senseColor;
+  float4 trailColor;
+};
+
+struct AgentSettings {
+  float moveSpeed;
+  float turnSpeed;
+  float turnCooldown;
+  float turnRandomStrength;
+  float headingIncrement;
+};
+
+RWTexture2D<float4> Output;
+RWStructuredBuffer<Agent> Agents;
+StructuredBuffer<AgentSettings> agentSettings;
+
+float Resolution;
+float Time;
+float DeltaTime;
+float NumAgents;
+float TrailWeight;
+float HeadingAttractionSpeed;
+// color filter stuff
+
+float getMagnitude(float4 vec)
+{
+  return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z + vec.w*vec.w);
+}
+
+float getMagnitude(float3 vec)
+{
+  return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
+
+// Hash function www.cs.ubc.ca/~rbridson/docs/schechter-sca08-turbulence.pdf
+float hash(uint state)
+{
+    state ^= 2747636419u;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    return state / 4294967295.0;
+    // return state;
+}
+
+float sense(Agent agent, float angleOffset)
+{
+  float sum = 0.0;
+  float2 direction = float2(cos(agent.heading + angleOffset), sin(agent.heading + angleOffset));
+  float2 offsetCenter = agent.position + direction*agent.sensingDist;
+  // gather all sensory data from specified offset per agent (to be called 3 times probs)
+
+  float senseWeight = agent.senseWeight;
+  float senseDiameter = agent.senseSize;
+  for (int xOffset = -int(senseDiameter/2.0); xOffset < int(senseDiameter/2.0); xOffset++) {
+    for (int yOffset = -int(senseDiameter/2.0); yOffset < int(senseDiameter/2.0); yOffset++) {
+      int2 newSample = int2(int(offsetCenter.x), int(offsetCenter.y)) + int2(xOffset, yOffset);
+
+      float4 origOutput = Output[newSample.xy];
+      float filterVal = (origOutput.x*agent.senseColor.x + origOutput.y*agent.senseColor.y + origOutput.z*agent.senseColor.z + origOutput.w*agent.senseColor.w)/(getMagnitude(origOutput)*getMagnitude(agent.senseColor));
+      if (filterVal < 0.75)
+      {
+        filterVal = 0.0;
+      }
+      else
+      {
+        filterVal = 1.0;
+      }
+      float newVal = filterVal*senseWeight*(origOutput.x + origOutput.y + origOutput.z + origOutput.w);
+      if (newVal <= agent.senseThreshold)
+      {
+        sum += newVal;
+      }
+      else
+      {
+        sum -= newVal; // run AWAY
+      }
+    }
+  }
+
+  return sum;
+}
+
+[numthreads(8,8,1)]
+void main (uint3 id : SV_DispatchThreadID)
+{
+
+  if (id.x >= (uint)NumAgents) { return; }
+  // get agent index mo betta
+  int agentIndex = Resolution*id.y + id.x;
+
+  Agent agent = Agents[agentIndex];
+  float random = hash(id.y * Resolution + id.x + hash((uint)Time));
+
+  float turnSpeed = agentSettings[0].turnSpeed; // hard coded for now
+
+  float weightForward = sense(agent, 0.0);
+  float weightRight = sense(agent, agent.sensingAngle);
+  float weightLeft = sense(agent, -agent.sensingAngle);
+
+  // handle heading tweaks
+
+  // only allowed to turn when off cooldown
+  if (agent.cooldownCounter <= 0.0)
+  {
+    // goin' ferd
+    if (weightForward > weightLeft && weightForward > weightRight)
+    {
+      agent.heading += 0;
+    }
+    else if (weightForward < weightLeft && weightForward < weightRight)
+    {
+      agent.heading -= 2*(agentSettings[0].turnRandomStrength*random + 1)*turnSpeed*DeltaTime;
+      // agent.heading -= 2*turnSpeed*DeltaTime + randomTurnContribution;
+      agent.cooldownCounter = agentSettings[0].turnCooldown;
+    }
+    else if (weightRight > weightLeft)
+    {
+      agent.heading += (agentSettings[0].turnRandomStrength*random + 1)*turnSpeed*DeltaTime;
+      // agent.heading += turnSpeed*DeltaTime + randomTurnContribution;
+      agent.cooldownCounter = agentSettings[0].turnCooldown;
+    }
+    else if (weightRight < weightLeft)
+    {
+      agent.heading -= (agentSettings[0].turnRandomStrength*random + 1)*turnSpeed*DeltaTime;
+      // agent.heading -= turnSpeed*DeltaTime + randomTurnContribution;
+      agent.cooldownCounter = agentSettings[0].turnCooldown;
+    }
+  }
+  else
+  {
+    agent.cooldownCounter -= DeltaTime;
+    if (agent.cooldownCounter <= 0.0)
+    {
+      agent.cooldownCounter = 0.0;
+    }
+  }
+
+  float targetHeading = agentSettings[0].headingIncrement*(float)round(agent.heading/agentSettings[0].headingIncrement);
+  agent.heading = lerp(agent.heading, targetHeading, HeadingAttractionSpeed);
+
+  // agent.heading = agentSettings[0].headingIncrement*(float)round(agent.heading/agentSettings[0].headingIncrement);
+  // agent.heading =
+
+  float2 direction = float2(cos(agent.heading), sin(agent.heading));
+  float2 newPos = agent.position + direction*agentSettings[0].moveSpeed*DeltaTime;
+
+  // Clamp position to map boundaries, and pick new random move dir if hit boundary
+  int lbb = 10;
+  int rbb = Resolution - lbb;
+	if (newPos.x < lbb || newPos.x >= rbb || newPos.y < lbb || newPos.y >= rbb) {
+		// random = hash(random);
+		// float randomAngle = hash(random - newPos.y) * 2 * 3.1415;
+		float randomAngle = hash(id.x * Resolution + id.y + hash((uint)Time*2));
+
+		newPos.x = min(rbb - 5,max(lbb + 5, newPos.x));
+		newPos.y = min(rbb - 5,max(lbb + 5, newPos.y));
+		// agent.heading = randomAngle;
+		agent.heading = agent.heading - 3.14159;
+	}
+	else {
+    int2 newSample = int2(newPos.x, newPos.y);
+    float4 oldOutput = Output[newSample];
+    float4 newOutput = max(min(1, oldOutput + TrailWeight*DeltaTime), 0);
+
+    float2 agentDirection = float2(cos(agent.heading), sin(agent.heading));
+    float2 agentPosition = agent.position;
+    float headDiameter = agent.bodySize;
+
+    for (int xOffset = -int(headDiameter/2.0); xOffset < int(headDiameter/2.0); xOffset++)
+    {
+      for (int yOffset = -int(headDiameter/2.0); yOffset < int(headDiameter/2.0); yOffset++)
+      {
+        int2 newSample = int2(agentPosition.x, agentPosition.y) + int2(xOffset, yOffset);
+        // float4 origOutput = Output[newSample.xy];
+        // float newVal = senseWeight*origOutput.x + senseWeight*origOutput.y + senseWeight*origOutput.z + senseWeight*origOutput.w;
+        // Output[newSample] = max(min(1, oldOutput + agent.trailColor*DeltaTime), 0);
+        if (newSample.x > lbb && newSample.x < rbb && newSample.y > lbb && newSample.y < rbb)
+        {
+          Output[newSample] = agent.trailColor;
+        }
+        else
+        {
+          Output[newSample] = 0.0;
+        }
+      }
+    }
+	}
+
+  agent.position = newPos;
+  Agents[agentIndex] = agent;
+}
+
+
+#pragma kernel Diffuse
+
+float decayRate;
+float diffuseRate;
+RWTexture2D<float4> DiffusedOutput;
+// float Resolution;
+// RWTexture2D<float4> Output;
+
+[numthreads(8,8,1)]
+void Diffuse (uint3 id : SV_DispatchThreadID)
+{
+
+	float4 sum = 0;
+	float4 originalCol = DiffusedOutput[id.xy];
+	// 3x3 blur
+	for (int offsetX = -1; offsetX <= 1; offsetX ++) {
+		for (int offsetY = -1; offsetY <= 1; offsetY ++) {
+			int sampleX = min(Resolution-1, max(0, id.x + offsetX));
+			int sampleY = min(Resolution-1, max(0, id.y + offsetY));
+			sum += DiffusedOutput[int2(sampleX,sampleY)];
+		}
+	}
+
+	float4 blurredCol = sum / 9;
+	// float diffuseWeight = saturate(diffuseRate * DeltaTime);
+	float diffuseWeight = min(max(diffuseRate * DeltaTime,0),1);
+	blurredCol = originalCol * (1 - diffuseWeight) + blurredCol * (diffuseWeight);
+
+	//DiffusedOutput[id.xy] = blurredCol * saturate(1 - decayRate * DeltaTime);
+  // int buff = Resolution - 10;
+  DiffusedOutput[id.xy] = blurredCol*min(max(1 - decayRate * DeltaTime, 0), 1);
+  // if (id.x < Res && id.y < buff && id.x > 10 && id.y > 10)
+  // {
+  // }
+  // else
+  // {
+  //   DiffusedOutput[id.xy] = 0.0;
+  // }
+}
+
+// other spooky kernels for spooky tasks
+
+// #pragma kernel Rotation
+//
+// // float Resolution;
+//
+// RWTexture2D<float4> Input;
+// RWTexture2D<float4> RotatedOutput;
+// // RWTexture2D<float4> Output;
+//
+// [numthreads(8,8,1)]
+// void Rotation (uint3 id : SV_DispatchThreadID)
+// {
+//   int sampleIncrements = 27;
+//   float sampleDistance = 2;
+//   float angleIncrement = (3.14159*2.0)/float(sampleIncrements);
+//   // float angleIncrement = (360.0)/float(sampleIncrements);
+//   float4 pixelVal = float4(0.0, 0.0, 0.0, 0.0);
+//   int bestIndex = 0;
+//   float2 bestDirection = float2(0.0, 0.0);
+//   // for (int ang = 0; ang <= sampleIncrements; ang++) {
+//   for (int ang = 0; ang < sampleIncrements; ang++)
+//   {
+//     float2 direction = float2(sampleDistance*cos(angleIncrement*float(ang)), sampleDistance*sin(angleIncrement*float(ang)));
+//     // figure out if we're outside bounds of texture
+//     int2 newPos = int2(id.x + int(direction.x), id.y + int(direction.y));
+//     if (newPos.x < 0 || newPos.x >= Resolution-1 || newPos.y < 0 || newPos.y >= Resolution-1) {
+//       return; // skippy
+//     }
+//
+//     float4 tempPixelVal = Input[newPos]; // hoping for clamped here
+//     if (tempPixelVal.x + tempPixelVal.y + tempPixelVal.z + tempPixelVal.w >
+//         pixelVal.x + pixelVal.y + pixelVal.z + pixelVal.w)
+//     {
+//       pixelVal = tempPixelVal;
+//       bestIndex = ang;
+//       bestDirection = direction;
+//     }
+//   }
+//   // RotatedOutput[id.xy] = float4(bestDirection.x/sampleDistance, bestDirection.y/sampleDistance, 0.0, 1.0);
+//   RotatedOutput[id.xy] = float4((float(bestIndex)*angleIncrement)/(3.14159*2.0), 0.0, 0.0, 1.0);
+// }
